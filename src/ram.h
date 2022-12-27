@@ -3,8 +3,12 @@
 
 #include <stdint.h>
 
-float readRAMUsage();
-uint64_t getTotalRAM();
-uint64_t getFreeRAM();
+typedef struct {
+    uint64_t totalKb;
+    uint64_t freeKb;
+    float usagePercent;
+} RAMStatus;
+
+uint8_t readRAMUsage(RAMStatus* ram);
 
 #endif

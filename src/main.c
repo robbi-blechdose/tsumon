@@ -30,16 +30,11 @@ WINDOW* ramWin;
 WINDOW* gpuWin;
 WINDOW* networkWin;
 //Values
-float cpuVal;
-float ramVal;
-float gpuVal;
+CPUStatus cpu;
+RAMStatus ram;
+GPUStatus gpu;
 float netDownVal;
 float netUpVal;
-//Names
-#define CPU_NAME_LENGTH 28
-char cpuName[CPU_NAME_LENGTH];
-#define GPU_NAME_LENGTH 28
-char gpuName[GPU_NAME_LENGTH];
 
 void drawWindows()
 {
@@ -59,29 +54,29 @@ void drawWindows()
     //Draw CPU window
     drawTitledWindow(cpuWin, "CPU", WIN_WIDTH);
     wattrset(cpuWin, A_BOLD);
-    mvwaddstr(cpuWin, 1, 1, cpuName);
+    mvwaddstr(cpuWin, 1, 1, cpu.name);
     wattrset(cpuWin, 0);
-    drawBarWithPercentage(cpuWin, 2, 1, cpuVal);
-    sprintf(buffer, "Temp: %4.1f °C", getCPUTemperature());
+    drawBarWithPercentage(cpuWin, 2, 1, cpu.usagePercent);
+    sprintf(buffer, "Temp: %4.1f °C", cpu.temperature);
     mvwaddstr(cpuWin, 3, 1, buffer);
     wrefresh(cpuWin);
     //Draw RAM window
     drawTitledWindow(ramWin, "RAM", WIN_WIDTH);
-    sprintf(buffer, "%4.1f GiB", KB_TO_GB(getTotalRAM()));
+    sprintf(buffer, "%4.1f GiB", KB_TO_GB(ram.totalKb));
     wattrset(ramWin, A_BOLD);
     mvwaddstr(ramWin, 1, 1, buffer);
     wattrset(ramWin, 0);
-    drawBarWithPercentage(ramWin, 2, 1, ramVal);
-    sprintf(buffer, "Used: %4.1f/%4.1f GiB", KB_TO_GB(getTotalRAM() - getFreeRAM()), KB_TO_GB(getTotalRAM()));
+    drawBarWithPercentage(ramWin, 2, 1, ram.usagePercent);
+    sprintf(buffer, "Used: %4.1f/%4.1f GiB", KB_TO_GB(ram.totalKb - ram.freeKb), KB_TO_GB(ram.totalKb));
     mvwaddstr(ramWin, 3, 1, buffer);
     wrefresh(ramWin);
     //Draw GPU window
     drawTitledWindow(gpuWin, "GPU", WIN_WIDTH);
     wattrset(gpuWin, A_BOLD);
-    mvwaddstr(gpuWin, 1, 1, gpuName);
+    mvwaddstr(gpuWin, 1, 1, gpu.name);
     wattrset(gpuWin, 0);
-    drawBarWithPercentage(gpuWin, 2, 1, gpuVal);
-    sprintf(buffer, "Temp: %4.1f °C", getGPUTemperature());
+    drawBarWithPercentage(gpuWin, 2, 1, gpu.usagePercent);
+    sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(gpuWin, 3, 1, buffer);
     wrefresh(gpuWin);
 }
@@ -108,24 +103,30 @@ int main(int argc, char* argv[])
     }
 
     //Get CPU name
-    if(getCPUName(cpuName, CPU_NAME_LENGTH))
+    if(getCPUName(&cpu))
     {
         //We keep going as it's not critical
-        strcpy(cpuName, "CANNOT DETECT");
+        strcpy(cpu.name, "CANNOT DETECT");
     }
 
     //Get GPU name
-    if(getGPUName(gpuName, GPU_NAME_LENGTH))
+    if(getGPUName(&gpu))
     {
         //We keep going as it's not critical
-        strcpy(gpuName, "CANNOT DETECT");
+        strcpy(gpu.name, "CANNOT DETECT");
     }
 
     while(true)
     {
-        cpuVal = readCPUUsage();
-        ramVal = readRAMUsage();
-        gpuVal = readGPUUsage();
+        //Discard errors for now
+        readCPUUsage(&cpu);
+        readCPUTemperature(&cpu);
+
+        readRAMUsage(&ram);
+
+        readGPUUsage(&gpu);
+        readGPUTemperature(&gpu);
+
         netDownVal = readNetworkUsageDown();
         netUpVal = readNetworkUsageUp();
 
