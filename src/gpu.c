@@ -7,8 +7,7 @@ static nvmlDevice_t device;
 
 uint8_t initGPU()
 {
-    nvmlReturn_t result;
-    result = nvmlInit();
+    nvmlReturn_t result = nvmlInit();
     if(result != NVML_SUCCESS)
     {
         return 1;
@@ -29,15 +28,22 @@ void quitGPU()
 float readGPUUsage()
 {
     nvmlUtilization_t util;
-    nvmlDeviceGetUtilizationRates(device, &util);
-
+    nvmlReturn_t result = nvmlDeviceGetUtilizationRates(device, &util);
+    if(result != NVML_SUCCESS)
+    {
+        return -1;
+    }
     return util.gpu;
 }
 
 float getGPUTemperature()
 {
     uint32_t temp;
-    nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp);
+    nvmlReturn_t result = nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp);
+    if(result != NVML_SUCCESS)
+    {
+        return -1;
+    }
     return temp;
 }
 
