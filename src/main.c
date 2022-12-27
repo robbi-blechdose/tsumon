@@ -88,9 +88,9 @@ void drawWindows()
     wattrset(netWin, A_BOLD);
     mvwaddstr(netWin, 1, 1, net.interface);
     wattrset(netWin, 0);
-    sprintf(buffer, "Down: %6.2f mB/s", B_TO_MB(net.down));
+    sprintf(buffer, "Down: %6.2f MiB/s", B_TO_MB(net.down));
     mvwaddstr(netWin, 2, 1, buffer);
-    sprintf(buffer, "Up:   %6.2f mB/s", B_TO_MB(net.up));
+    sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net.up));
     mvwaddstr(netWin, 3, 1, buffer);
     wrefresh(netWin);
 }
