@@ -5,22 +5,20 @@
 
 static nvmlDevice_t device;
 
-uint8_t initGPU()
+uint8_t initGPU(void)
 {
-    nvmlReturn_t result = nvmlInit();
-    if(result != NVML_SUCCESS)
+    if(nvmlInit() != NVML_SUCCESS)
     {
         return 1;
     }
-    result = nvmlDeviceGetHandleByIndex(0, &device);
-    if(result != NVML_SUCCESS)
+    if(nvmlDeviceGetHandleByIndex(0, &device) != NVML_SUCCESS)
     {
         return 2;
     }
     return 0;
 }
 
-void quitGPU()
+void quitGPU(void)
 {
     nvmlShutdown();
 }
@@ -28,8 +26,7 @@ void quitGPU()
 uint8_t readGPUUsage(GPUStatus* gpu)
 {
     nvmlUtilization_t util;
-    nvmlReturn_t result = nvmlDeviceGetUtilizationRates(device, &util);
-    if(result != NVML_SUCCESS)
+    if(nvmlDeviceGetUtilizationRates(device, &util) != NVML_SUCCESS)
     {
         return 1;
     }
@@ -40,8 +37,7 @@ uint8_t readGPUUsage(GPUStatus* gpu)
 uint8_t readGPUTemperature(GPUStatus* gpu)
 {
     uint32_t temp;
-    nvmlReturn_t result = nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp);
-    if(result != NVML_SUCCESS)
+    if(nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp) != NVML_SUCCESS)
     {
         return 1;
     }
@@ -51,8 +47,7 @@ uint8_t readGPUTemperature(GPUStatus* gpu)
 
 uint8_t getGPUName(GPUStatus* gpu)
 {
-    nvmlReturn_t result = nvmlDeviceGetName(device, gpu->name, GPU_NAME_LENGTH);
-    if(result != NVML_SUCCESS)
+    if(nvmlDeviceGetName(device, gpu->name, GPU_NAME_LENGTH) != NVML_SUCCESS)
     {
         return 1;
     }

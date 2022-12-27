@@ -11,8 +11,12 @@ uint8_t readRAMUsage(RAMStatus* ram)
     {
         return 1;
     }
-    fscanf(meminfo, "MemTotal: %lu kB MemFree: %lu kB MemAvailable: %lu kB Buffers: %lu kB Cached: %lu kB",
-                    &ram->totalKb, &memFree, &memAvailable, &buffers, &cached);
+    if(fscanf(meminfo, "MemTotal: %lu kB MemFree: %lu kB MemAvailable: %lu kB Buffers: %lu kB Cached: %lu kB",
+                    &ram->totalKb, &memFree, &memAvailable, &buffers, &cached) != 5)
+    {
+        fclose(meminfo);
+        return 2;
+    }
     fclose(meminfo);
 
     ram->freeKb = memFree + buffers + cached;

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-void ncursesSetup()
+void ncursesSetup(void)
 {
     initscr();
     noecho();
@@ -55,8 +55,9 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
 void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value)
 {
     drawBar(win, y, x, value);
-    char buffer[7];
-    sprintf(buffer, "%5.1f%%", value);
+    #define PERCENT_BUFFER_SIZE 7
+    char buffer[PERCENT_BUFFER_SIZE];
+    snprintf(buffer, PERCENT_BUFFER_SIZE, "%5.1f%%", value);
     mvwaddstr(win, y, x + 22, buffer);
 }
 

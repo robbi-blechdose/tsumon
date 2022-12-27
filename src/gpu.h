@@ -11,8 +11,8 @@ typedef struct {
     float temperature;
 } GPUStatus;
 
-uint8_t initGPU();
-void quitGPU();
+uint8_t initGPU(void);
+void quitGPU(void);
 
 uint8_t readGPUUsage(GPUStatus* gpu);
 uint8_t readGPUTemperature(GPUStatus* gpu);

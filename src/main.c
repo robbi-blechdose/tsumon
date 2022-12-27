@@ -37,7 +37,7 @@ RAMStatus ram;
 GPUStatus gpu;
 NetStatus net;
 
-void drawWindows()
+void drawWindows(void)
 {
     char buffer[WIN_WIDTH - 1];
 

@@ -19,12 +19,20 @@ uint8_t readNetworkUsage(NetStatus* net)
     size_t n;
     for(uint8_t i = 0; i < 2; i++)
     {
-        getline(&line, &n, netdev);
+        if(getline(&line, &n, netdev) <= 0)
+        {
+            fclose(netdev);
+            return 2;
+        }
     }
 
     if(getline(&line, &n, netdev) > 0)
     {
-        fscanf(netdev, "%s %lu %*u %*u %*u %*u %*u %*u %*u %lu", net->interface, &down, &up);
+        if(fscanf(netdev, "%s %lu %*u %*u %*u %*u %*u %*u %*u %lu", net->interface, &down, &up) != 3)
+        {
+            fclose(netdev);
+            return 3;
+        }
     }
 
     //Calculate difference

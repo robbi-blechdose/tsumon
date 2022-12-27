@@ -16,7 +16,11 @@ uint8_t readCPUUsage(CPUStatus* cpu)
         return 1;
     }
     uint64_t user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-    fscanf(stat, "cpu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice);
+    if(fscanf(stat, "cpu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice) != 10)
+    {
+        fclose(stat);
+        return 2;
+    }
     fclose(stat);
 
     //Calculate total CPU time
@@ -44,7 +48,11 @@ uint8_t readCPUTemperature(CPUStatus* cpu)
     }
 
     uint32_t temp;
-    fscanf(hwmon1, "%d", &temp);
+    if(fscanf(hwmon1, "%d", &temp) != 1)
+    {
+        fclose(hwmon1);
+        return 2;
+    }
     fclose(hwmon1);
 
     cpu->temperature = ((float) temp) / 1000;

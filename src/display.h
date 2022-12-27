@@ -9,7 +9,7 @@
 #define C_RB 3
 #define C_BC 4
 
-void ncursesSetup();
+void ncursesSetup(void);
 
 #define THRESHOLD_GREEN 50
 #define THRESHOLD_YELLOW 75
