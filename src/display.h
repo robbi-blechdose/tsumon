@@ -7,6 +7,7 @@
 #define C_GB 1
 #define C_YB 2
 #define C_RB 3
+#define C_BC 4
 
 void ncursesSetup();
 

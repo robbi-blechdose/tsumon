@@ -7,13 +7,13 @@ void ncursesSetup()
     initscr();
     noecho();
     curs_set(0);
-    keypad(stdscr, true);
     //Set up colors
     start_color();
     init_pair(C_WB, COLOR_WHITE, COLOR_BLACK);
     init_pair(C_GB, COLOR_GREEN, COLOR_BLACK);
     init_pair(C_YB, COLOR_YELLOW, COLOR_BLACK);
     init_pair(C_RB, COLOR_RED, COLOR_BLACK);
+    init_pair(C_BC, COLOR_BLACK, COLOR_CYAN);
 }
 
 void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
@@ -24,15 +24,15 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
     //Set color
     if(value < THRESHOLD_GREEN)
     {
-        wcolor_set(win, 1, 0);
+        wcolor_set(win, C_GB, 0);
     }
     else if(value < THRESHOLD_YELLOW)
     {
-        wcolor_set(win, 2, 0);
+        wcolor_set(win, C_YB, 0);
     }
     else
     {
-        wcolor_set(win, 3, 0);
+        wcolor_set(win, C_RB, 0);
     }
 
     //Draw bar
@@ -49,7 +49,7 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
     }
 
     //Reset color
-    wcolor_set(win, 0, 0);
+    wcolor_set(win, C_WB, 0);
 }
 
 void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value)
@@ -62,7 +62,7 @@ void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value)
 
 void drawTitledWindow(WINDOW* win, const char* title, uint8_t width)
 {
-    wcolor_set(win, 0, 0);
+    wcolor_set(win, C_WB, 0);
     box(win, 0, 0);
     mvwaddstr(win, 0, width / 2 - strlen(title) / 2, title);
 }
