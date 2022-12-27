@@ -26,16 +26,38 @@
 
 #define WIN_WIDTH 30
 
+int32_t screenX, screenY;
 //Windows
 WINDOW* cpuWin;
 WINDOW* ramWin;
 WINDOW* gpuWin;
 WINDOW* netWin;
+WINDOW* helpWin;
 //Values
 CPUStatus cpu;
 RAMStatus ram;
 GPUStatus gpu;
 NetStatus net;
+
+const uint8_t screenLayouts[4][5][2] = {
+    //1-column
+    {{2, 0},
+     {7, 0},
+     {12, 0},
+     {17, 0},
+     {22, 0}},
+    //2-column
+    {{2, 0}, {2, 30},
+     {7, 0}, {7, 30},
+     {12, 0}},
+    //3-column
+    {{2, 0}, {2, 30}, {2, 60},
+     {7, 0},
+     {12, 0}},
+    //4-column
+    {{2, 0}, {2, 30}, {2, 60}, {2, 90},
+     {7, 0}}
+};
 
 void drawWindows(void)
 {
@@ -43,13 +65,7 @@ void drawWindows(void)
 
     //Draw main window
     wattrset(stdscr, A_BOLD);
-    mvaddstr(0, 43, "spmon");
-    //Help
-    mvaddstr(8, 1, "F10");
-    wattrset(stdscr, 0);
-    wcolor_set(stdscr, C_BC, 0);
-    mvaddstr(8, 4, "Quit");
-    wcolor_set(stdscr, C_WB, 0);
+    mvaddstr(0, screenX / 2 - 2, "spmon");
     refresh();
 
     //Draw CPU window
@@ -93,6 +109,37 @@ void drawWindows(void)
     sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net.up));
     mvwaddstr(netWin, 3, 1, buffer);
     wrefresh(netWin);
+
+    //Draw help window
+    mvwaddstr(helpWin, 0, 1, "F10");
+    wattrset(helpWin, 0);
+    wcolor_set(helpWin, C_BC, 0);
+    mvwaddstr(helpWin, 0, 4, "Quit");
+    wcolor_set(helpWin, C_WB, 0);
+    wrefresh(helpWin);
+}
+
+void repositionWindows(void)
+{
+    //Clear all windows to prevent garbage appearing
+    wclear(stdscr);
+    wclear(cpuWin);
+    wclear(ramWin);
+    wclear(gpuWin);
+    wclear(netWin);
+
+    //Get correct layout for screen width
+    uint8_t index = (screenX / 30) - 1;
+    if(index > 3)
+    {
+        index = 3;
+    }
+    //Reposition windows
+    mvwin(cpuWin, screenLayouts[index][0][0], screenLayouts[index][0][1]);
+    mvwin(ramWin, screenLayouts[index][1][0], screenLayouts[index][1][1]);
+    mvwin(gpuWin, screenLayouts[index][2][0], screenLayouts[index][2][1]);
+    mvwin(netWin, screenLayouts[index][3][0], screenLayouts[index][3][1]);
+    mvwin(helpWin, screenLayouts[index][4][0], screenLayouts[index][4][1]);
 }
 
 int main(int argc, char* argv[])
@@ -103,10 +150,14 @@ int main(int argc, char* argv[])
     timeout(0);
 
     //Set up display windows
-    cpuWin = newwin(5, WIN_WIDTH, 2, 0);
-    ramWin = newwin(5, WIN_WIDTH, 2, 30);
-    gpuWin = newwin(5, WIN_WIDTH, 2, 60);
-    netWin = newwin(5, WIN_WIDTH, 2, 90);
+    //Positions don't matter since they're set by the first repositionWindows() call
+    cpuWin = newwin(5, WIN_WIDTH, 0, 0);
+    ramWin = newwin(5, WIN_WIDTH, 0, 0);
+    gpuWin = newwin(5, WIN_WIDTH, 0, 0);
+    netWin = newwin(5, WIN_WIDTH, 0, 0);
+    helpWin = newwin(1, WIN_WIDTH, 0, 0);
+    getmaxyx(stdscr, screenY, screenX);
+    repositionWindows();
 
     //Init subsystems
     if(initGPU())
@@ -148,9 +199,15 @@ int main(int argc, char* argv[])
 
         sleep(READ_INTERVAL_MS / 1000);
 
-        if(getch() == KEY_F(10))
+        int32_t c = getch();
+        if(c == KEY_F(10))
         {
             break;
+        }
+        else if(c == KEY_RESIZE)
+        {
+            getmaxyx(stdscr, screenY, screenX);
+            repositionWindows();
         }
     }
 
