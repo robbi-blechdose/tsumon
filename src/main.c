@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define B_TO_KB(X) ((X) / 1024.0f)
+#define B_TO_MB(X) ((X) / 1048576.0f)
 #define KB_TO_GB(X) ((X) / 1048576.0f)
 
 #define WIN_WIDTH 30
@@ -28,13 +30,12 @@
 WINDOW* cpuWin;
 WINDOW* ramWin;
 WINDOW* gpuWin;
-WINDOW* networkWin;
+WINDOW* netWin;
 //Values
 CPUStatus cpu;
 RAMStatus ram;
 GPUStatus gpu;
-float netDownVal;
-float netUpVal;
+NetStatus net;
 
 void drawWindows()
 {
@@ -60,6 +61,7 @@ void drawWindows()
     sprintf(buffer, "Temp: %4.1f °C", cpu.temperature);
     mvwaddstr(cpuWin, 3, 1, buffer);
     wrefresh(cpuWin);
+
     //Draw RAM window
     drawTitledWindow(ramWin, "RAM", WIN_WIDTH);
     sprintf(buffer, "%4.1f GiB", KB_TO_GB(ram.totalKb));
@@ -70,6 +72,7 @@ void drawWindows()
     sprintf(buffer, "Used: %4.1f/%4.1f GiB", KB_TO_GB(ram.totalKb - ram.freeKb), KB_TO_GB(ram.totalKb));
     mvwaddstr(ramWin, 3, 1, buffer);
     wrefresh(ramWin);
+
     //Draw GPU window
     drawTitledWindow(gpuWin, "GPU", WIN_WIDTH);
     wattrset(gpuWin, A_BOLD);
@@ -79,6 +82,17 @@ void drawWindows()
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(gpuWin, 3, 1, buffer);
     wrefresh(gpuWin);
+
+    //Draw Network window
+    drawTitledWindow(netWin, "Network", WIN_WIDTH);
+    wattrset(netWin, A_BOLD);
+    mvwaddstr(netWin, 1, 1, net.interface);
+    wattrset(netWin, 0);
+    sprintf(buffer, "Down: %6.2f mB/s", B_TO_MB(net.down));
+    mvwaddstr(netWin, 2, 1, buffer);
+    sprintf(buffer, "Up:   %6.2f mB/s", B_TO_MB(net.up));
+    mvwaddstr(netWin, 3, 1, buffer);
+    wrefresh(netWin);
 }
 
 int main(int argc, char* argv[])
@@ -92,6 +106,7 @@ int main(int argc, char* argv[])
     cpuWin = newwin(5, WIN_WIDTH, 2, 0);
     ramWin = newwin(5, WIN_WIDTH, 2, 30);
     gpuWin = newwin(5, WIN_WIDTH, 2, 60);
+    netWin = newwin(5, WIN_WIDTH, 2, 90);
 
     //Init subsystems
     if(initGPU())
@@ -127,8 +142,7 @@ int main(int argc, char* argv[])
         readGPUUsage(&gpu);
         readGPUTemperature(&gpu);
 
-        netDownVal = readNetworkUsageDown();
-        netUpVal = readNetworkUsageUp();
+        readNetworkUsage(&net);
 
         drawWindows();
 

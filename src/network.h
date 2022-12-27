@@ -3,7 +3,14 @@
 
 #include <stdint.h>
 
-uint64_t readNetworkUsageDown();
-uint64_t readNetworkUsageUp();
+#define INTERFACE_LENGTH 28
+
+typedef struct {
+    char interface[INTERFACE_LENGTH];
+    uint64_t down;
+    uint64_t up;
+} NetStatus;
+
+uint8_t readNetworkUsage(NetStatus* net);
 
 #endif
