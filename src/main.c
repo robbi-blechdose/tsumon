@@ -27,10 +27,13 @@ int main(int argc, char* argv[])
 {
     ncursesSetup();
 
+    keypad(stdscr, true);
+    timeout(0);
+
     //Set up display windows
-    WINDOW* cpuWin = newwin(5, WIN_WIDTH, 1, 1);
-    WINDOW* ramWin = newwin(5, WIN_WIDTH, 1, 31);
-    WINDOW* gpuWin = newwin(5, WIN_WIDTH, 1, 61);
+    WINDOW* cpuWin = newwin(5, WIN_WIDTH, 2, 0);
+    WINDOW* ramWin = newwin(5, WIN_WIDTH, 2, 30);
+    WINDOW* gpuWin = newwin(5, WIN_WIDTH, 2, 60);
 
     //Init subsystems
     if(initGPU())
@@ -70,7 +73,14 @@ int main(int argc, char* argv[])
         gpu = readGPUUsage();
 
         //Draw main window
-        box(stdscr, 0, 0);
+        wattrset(stdscr, A_BOLD);
+        mvaddstr(0, 43, "spmon");
+        //Help
+        mvaddstr(8, 1, "F10");
+        wattrset(stdscr, 0);
+        wcolor_set(stdscr, C_BC, 0);
+        mvaddstr(8, 4, "Quit");
+        wcolor_set(stdscr, C_WB, 0);
         refresh();
 
         char buffer[WIN_WIDTH - 1];
@@ -105,6 +115,11 @@ int main(int argc, char* argv[])
         wrefresh(gpuWin);
 
         sleep(READ_INTERVAL_MS / 1000);
+
+        if(getch() == KEY_F(10))
+        {
+            break;
+        }
     }
 
     //Quit
