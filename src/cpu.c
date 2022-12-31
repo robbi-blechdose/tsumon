@@ -30,7 +30,8 @@ uint8_t readCPUUsage(CPUStatus* cpu)
     float totalDelta = cpuTotal - totalLast;
     float idleDelta = cpuIdle - idleLast;
     //Calculate CPU usage
-    cpu->usagePercent = ((1.0f - (idleDelta / totalDelta)) * (READ_INTERVAL_MS / 10 / sysconf(_SC_CLK_TCK))) * 100;
+    const uint64_t perSecond = (READ_INTERVAL_MS / 10 / sysconf(_SC_CLK_TCK));
+    cpu->usagePercent = (1.0f - (idleDelta / totalDelta)) * 100 * perSecond;
 
     //Swap values
     totalLast = cpuTotal;
