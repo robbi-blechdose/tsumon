@@ -24,6 +24,7 @@
 #define B_TO_MB(X) ((X) / 1048576.0f)
 #define KB_TO_GB(X) ((X) / 1048576.0f)
 
+#define WIN_HEIGHT 5
 #define WIN_WIDTH 30
 
 int32_t screenX, screenY;
@@ -129,7 +130,7 @@ void repositionWindows(void)
     wclear(netWin);
 
     //Get correct layout for screen width
-    uint8_t index = (screenX / 30) - 1;
+    uint8_t index = (screenX / WIN_WIDTH) - 1;
     if(index > 3)
     {
         index = 3;
@@ -140,6 +141,12 @@ void repositionWindows(void)
     mvwin(gpuWin, screenLayouts[index][2][0], screenLayouts[index][2][1]);
     mvwin(netWin, screenLayouts[index][3][0], screenLayouts[index][3][1]);
     mvwin(helpWin, screenLayouts[index][4][0], screenLayouts[index][4][1]);
+    //Resize windows to prevent breaking when terminal is resized below window size
+    wresize(cpuWin, WIN_HEIGHT, WIN_WIDTH);
+    wresize(ramWin, WIN_HEIGHT, WIN_WIDTH);
+    wresize(gpuWin, WIN_HEIGHT, WIN_WIDTH);
+    wresize(netWin, WIN_HEIGHT, WIN_WIDTH);
+    wresize(helpWin, 1, WIN_WIDTH);
 }
 
 int main(int argc, char* argv[])
@@ -151,10 +158,10 @@ int main(int argc, char* argv[])
 
     //Set up display windows
     //Positions don't matter since they're set by the first repositionWindows() call
-    cpuWin = newwin(5, WIN_WIDTH, 0, 0);
-    ramWin = newwin(5, WIN_WIDTH, 0, 0);
-    gpuWin = newwin(5, WIN_WIDTH, 0, 0);
-    netWin = newwin(5, WIN_WIDTH, 0, 0);
+    cpuWin = newwin(WIN_HEIGHT, WIN_WIDTH, 0, 0);
+    ramWin = newwin(WIN_HEIGHT, WIN_WIDTH, 0, 0);
+    gpuWin = newwin(WIN_HEIGHT, WIN_WIDTH, 0, 0);
+    netWin = newwin(WIN_HEIGHT, WIN_WIDTH, 0, 0);
     helpWin = newwin(1, WIN_WIDTH, 0, 0);
     getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
@@ -181,6 +188,10 @@ int main(int argc, char* argv[])
         //We keep going as it's not critical
         strcpy(gpu.name, "CANNOT DETECT");
     }
+
+    //Do a first read to prevent too-large values
+    readCPUUsage(&cpu);
+    readNetworkUsage(&net);
 
     while(true)
     {
