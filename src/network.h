@@ -11,6 +11,12 @@ typedef struct {
     uint64_t up;
 } NetStatus;
 
+/**
+ * Reads the network usage from the first non-loopback interface (in bytes)
+ * Also stores the interface name
+ * @param net Struct to store results into
+ * @return 0 for success
+ **/
 uint8_t readNetworkUsage(NetStatus* net);
 
 #endif
