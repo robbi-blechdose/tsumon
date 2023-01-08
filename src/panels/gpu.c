@@ -68,7 +68,6 @@ uint8_t initGPUPanel(Panel* panel)
         return 1;
     }
 
-    panel->type = P_GPU;
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(GPUStatus));
     if(getGPUName(panel->title))

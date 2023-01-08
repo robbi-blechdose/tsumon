@@ -34,14 +34,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define B_TO_KB(X) ((X) / 1024.0f)
-
 #define WIN_HEIGHT 5
 #define WIN_WIDTH 30
 
 int32_t screenX, screenY;
 //Windows
-WINDOW* helpWin;
+WINDOW* infoWin;
 
 #define NUM_PANELS 4
 Panel panels[NUM_PANELS];
@@ -66,17 +64,17 @@ const uint8_t screenLayouts[4][5][2] = {
      {7, 0}}
 };
 
-void drawWindows(void)
+void drawInfoWin(void)
 {
     //Draw help window
-    mvwaddstr(helpWin, 0, 1, "F2");
-    mvwaddstr(helpWin, 0, 9, "F10");
-    wattrset(helpWin, 0);
-    wcolor_set(helpWin, C_BC, 0);
-    mvwaddstr(helpWin, 0, 3, "Setup");
-    mvwaddstr(helpWin, 0, 12, "Quit");
-    wcolor_set(helpWin, C_WB, 0);
-    wrefresh(helpWin);
+    mvwaddstr(infoWin, 0, 1, "F2");
+    mvwaddstr(infoWin, 0, 9, "F10");
+    wattrset(infoWin, 0);
+    wcolor_set(infoWin, C_BC, 0);
+    mvwaddstr(infoWin, 0, 3, "Setup");
+    mvwaddstr(infoWin, 0, 12, "Quit");
+    wcolor_set(infoWin, C_WB, 0);
+    wrefresh(infoWin);
 }
 
 void repositionWindows(void)
@@ -97,20 +95,20 @@ void repositionWindows(void)
     }
 
     //Reposition windows
-    mvwin(panels[0].window, screenLayouts[index][0][0], screenLayouts[index][0][1]);
-    mvwin(panels[1].window, screenLayouts[index][1][0], screenLayouts[index][1][1]);
-    mvwin(panels[2].window, screenLayouts[index][2][0], screenLayouts[index][2][1]);
-    mvwin(panels[3].window, screenLayouts[index][3][0], screenLayouts[index][3][1]);
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    {
+        mvwin(panels[i].window, screenLayouts[index][i][0], screenLayouts[index][i][1]);
+    }
 
-    mvwin(helpWin, screenLayouts[index][4][0], screenLayouts[index][4][1]);
+    mvwin(infoWin, screenLayouts[index][4][0], screenLayouts[index][4][1]);
 
     //Resize windows to prevent breaking when terminal is resized below window size
-    wresize(panels[0].window, WIN_HEIGHT, WIN_WIDTH);
-    wresize(panels[1].window, WIN_HEIGHT, WIN_WIDTH);
-    wresize(panels[2].window, WIN_HEIGHT, WIN_WIDTH);
-    wresize(panels[3].window, WIN_HEIGHT, WIN_WIDTH);
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    {
+        wresize(panels[i].window, WIN_HEIGHT, WIN_WIDTH);
+    }
 
-    wresize(helpWin, 1, WIN_WIDTH);
+    wresize(infoWin, 1, WIN_WIDTH);
 }
 
 int main(int argc, char* argv[])
@@ -121,19 +119,23 @@ int main(int argc, char* argv[])
     timeout(0);
 
     //Set up panels
-    initCPUPanel(&panels[0]);
-    initRAMPanel(&panels[1]);
-    if(initGPUPanel(&panels[2]))
+    panels[0].type = P_CPU;
+    panels[1].type = P_RAM;
+    panels[2].type = P_GPU;
+    panels[3].type = P_NETWORK;
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
-        endwin();
-        printf("Could not initialize NVML.\nExiting.\n");
-        return 1;
+        if(initPanel(&panels[i]))
+        {
+            endwin();
+            printf("Failed to initalize panel %d.\n", i);
+            return 1;
+        }
     }
-    initNetworkPanel(&panels[3]);
 
     //Set up display windows
     //Positions don't matter since they're set by the first repositionWindows() call
-    helpWin = newwin(1, WIN_WIDTH, 0, 0);
+    infoWin = newwin(1, WIN_WIDTH, 0, 0);
     getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
 
@@ -153,7 +155,7 @@ int main(int argc, char* argv[])
             updatePanel(&panels[i]);
         }
 
-        drawWindows();
+        drawInfoWin();
 
         sleep(READ_INTERVAL_MS / 1000);
 

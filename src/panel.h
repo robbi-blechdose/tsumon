@@ -24,6 +24,7 @@ typedef struct {
     uint8_t y;
 } Panel;
 
+uint8_t initPanel(Panel* panel);
 void updatePanel(Panel* panel);
 void quitPanel(Panel* panel);
 

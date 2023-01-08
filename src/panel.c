@@ -14,6 +14,36 @@ const char* panelNames[4] = {
     [P_NETWORK] = "Network"
 };
 
+uint8_t initPanel(Panel* panel)
+{
+    switch(panel->type)
+    {
+        case P_CPU:
+        {
+            initCPUPanel(panel);
+            return 0;
+        }
+        case P_RAM:
+        {
+            initRAMPanel(panel);
+            return 0;
+        }
+        case P_GPU:
+        {
+            return initGPUPanel(panel);
+        }
+        case P_NETWORK:
+        {
+            initNetworkPanel(panel);
+            return 0;
+        }
+        default:
+        {
+            return 128;
+        }
+    }
+}
+
 //Discards errors from input functions for now
 void updatePanel(Panel* panel)
 {

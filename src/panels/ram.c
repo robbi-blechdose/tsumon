@@ -40,7 +40,6 @@ uint8_t readRAMUsage(Panel* panel)
 
 void initRAMPanel(Panel* panel)
 {
-    panel->type = P_RAM;
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(RAMStatus));
     strcpy(panel->title, "");

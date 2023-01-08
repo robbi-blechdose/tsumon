@@ -93,7 +93,6 @@ uint8_t getInterfaceName(char* name)
 
 void initNetworkPanel(Panel* panel)
 {
-    panel->type = P_NETWORK;
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(NetStatus));
     if(getInterfaceName(panel->title))

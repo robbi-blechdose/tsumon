@@ -97,7 +97,6 @@ uint8_t getCPUName(char* name)
 
 void initCPUPanel(Panel* panel)
 {
-    panel->type = P_CPU;
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(CPUStatus));
     if(getCPUName(panel->title))
