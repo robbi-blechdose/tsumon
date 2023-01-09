@@ -42,4 +42,14 @@ void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value);
  **/
 void drawTitledWindow(WINDOW* win, const char* title, uint8_t width);
 
+/**
+ * Draws a slider with the specified length and a marker at the current position
+ * @param win Window to draw to
+ * @param y Y position
+ * @param x X start position
+ * @param length Length of the slider (+2 for start/end marks)
+ * @param current Current position of the slider. If > length, no marker is drawn
+ **/
+void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t current);
+
 #endif

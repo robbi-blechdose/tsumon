@@ -18,15 +18,6 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
-
-#include "panels/cpu.h"
-#include "display.h"
-#include "panels/gpu.h"
-#include "panels/ram.h"
-#include "panels/network.h"
-
-#include "panel.h"
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -34,15 +25,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "display.h"
+#include "panel.h"
+#include "setup.h"
+
 #define WIN_HEIGHT 5
 #define WIN_WIDTH 30
 
 int32_t screenX, screenY;
 //Windows
 WINDOW* infoWin;
+WINDOW* setupWin;
 
 #define NUM_PANELS 4
 Panel panels[NUM_PANELS];
+
+bool setupOpen = false;
 
 const uint8_t screenLayouts[4][5][2] = {
     //1-column
@@ -136,6 +134,7 @@ int main(int argc, char* argv[])
     //Set up display windows
     //Positions don't matter since they're set by the first repositionWindows() call
     infoWin = newwin(1, WIN_WIDTH, 0, 0);
+    setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 2, 0);
     getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
 
@@ -150,19 +149,38 @@ int main(int argc, char* argv[])
         mvaddstr(0, screenX / 2 - 2, "spmon");
         refresh();
 
-        for(uint8_t i = 0; i < NUM_PANELS; i++)
+        if(setupOpen)
         {
-            updatePanel(&panels[i]);
+            drawSetup(setupWin);
+        }
+        else
+        {
+            for(uint8_t i = 0; i < NUM_PANELS; i++)
+            {
+                updatePanel(&panels[i]);
+            }
         }
 
         drawInfoWin();
 
-        sleep(READ_INTERVAL_MS / 1000);
+        if(!setupOpen)
+        {
+            usleep(getRefreshInterval() * 1000);
+        }
 
         int32_t c = getch();
         if(c == KEY_F(10))
         {
             break;
+        }
+        else if(c == KEY_F(2))
+        {
+            setupOpen = !setupOpen;
+            wclear(stdscr);
+        }
+        else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
+        {
+            moveSetupCursorLR(c == KEY_LEFT);
         }
         else if(c == KEY_RESIZE)
         {

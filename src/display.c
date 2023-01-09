@@ -67,3 +67,17 @@ void drawTitledWindow(WINDOW* win, const char* title, uint8_t width)
     box(win, 0, 0);
     mvwaddstr(win, 0, width / 2 - strlen(title) / 2, title);
 }
+
+void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t current)
+{
+    mvwaddch(win, y, x, '<');
+    for(uint8_t i = 0; i < length; i++)
+    {
+        mvwaddch(win, y, x + 1 + i, '=');
+        if(i == current)
+        {
+            mvwaddch(win, y, x + 1 + i, '#');
+        }
+    }
+    mvwaddch(win, y, x + 1 + length, '>');
+}

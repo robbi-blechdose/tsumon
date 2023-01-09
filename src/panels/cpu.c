@@ -38,7 +38,7 @@ uint8_t readCPUUsage(Panel* panel)
     float totalDelta = cpuTotal - cpu->totalLast;
     float idleDelta = cpuIdle - cpu->idleLast;
     //Calculate CPU usage
-    const uint64_t perSecond = (READ_INTERVAL_MS / 10 / sysconf(_SC_CLK_TCK));
+    const uint64_t perSecond = (1000 / 10 / sysconf(_SC_CLK_TCK));
     cpu->usagePercent = (1.0f - (idleDelta / totalDelta)) * 100 * perSecond;
 
     //Swap values
