@@ -42,26 +42,6 @@ Panel panels[NUM_PANELS];
 
 bool setupOpen = false;
 
-const uint8_t screenLayouts[4][5][2] = {
-    //1-column
-    {{2, 0},
-     {7, 0},
-     {12, 0},
-     {17, 0},
-     {22, 0}},
-    //2-column
-    {{2, 0}, {2, 30},
-     {7, 0}, {7, 30},
-     {12, 0}},
-    //3-column
-    {{2, 0}, {2, 30}, {2, 60},
-     {7, 0},
-     {12, 0}},
-    //4-column
-    {{2, 0}, {2, 30}, {2, 60}, {2, 90},
-     {7, 0}}
-};
-
 void drawInfoWin(void)
 {
     //Draw help window
@@ -79,26 +59,31 @@ void repositionWindows(void)
 {
     //Clear all windows to prevent garbage appearing
     wclear(stdscr);
-
     for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
         wclear(panels[i].window);
     }
 
-    //Get correct layout for screen width
-    uint8_t index = (screenX / WIN_WIDTH) - 1;
-    if(index > 3)
+    //Layout windows
+    //We can only layout for a minimum width
+    if(screenX < PANEL_WIDTH)
     {
-        index = 3;
+        screenX = PANEL_WIDTH;
     }
-
-    //Reposition windows
+    uint8_t y = 1;
+    uint8_t x = 0;
     for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
-        mvwin(panels[i].window, screenLayouts[index][i][0], screenLayouts[index][i][1]);
+        mvwin(panels[i].window, y, x);
+        x += PANEL_WIDTH;
+        if(x + PANEL_WIDTH > screenX || i == NUM_PANELS - 1)
+        {
+            x = 0;
+            y += PANEL_HEIGHT;
+        }
     }
 
-    mvwin(infoWin, screenLayouts[index][4][0], screenLayouts[index][4][1]);
+    mvwin(infoWin, y, 0);
 
     //Resize windows to prevent breaking when terminal is resized below window size
     for(uint8_t i = 0; i < NUM_PANELS; i++)
