@@ -13,6 +13,7 @@ const char* panelNames[4] = {
     [P_GPU] = "GPU",
     [P_NETWORK] = "Network"
 };
+#define MAX_NAME_LENGTH 7
 
 uint8_t initPanel(Panel* panel)
 {

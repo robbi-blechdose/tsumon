@@ -37,8 +37,7 @@ int32_t screenX, screenY;
 WINDOW* infoWin;
 WINDOW* setupWin;
 
-#define NUM_PANELS 4
-Panel panels[NUM_PANELS];
+Panel* panels;
 
 bool setupOpen = false;
 
@@ -59,7 +58,7 @@ void repositionWindows(void)
 {
     //Clear all windows to prevent garbage appearing
     wclear(stdscr);
-    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    for(uint8_t i = 0; i < numPanels; i++)
     {
         wclear(panels[i].window);
     }
@@ -73,11 +72,11 @@ void repositionWindows(void)
     }
     uint8_t y = 1;
     uint8_t x = 0;
-    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    for(uint8_t i = 0; i < numPanels; i++)
     {
         mvwin(panels[i].window, y, x);
         x += PANEL_WIDTH;
-        if(x + PANEL_WIDTH > screenX || i == NUM_PANELS - 1)
+        if(x + PANEL_WIDTH > screenX || i == numPanels - 1)
         {
             x = 0;
             y += PANEL_HEIGHT;
@@ -87,7 +86,7 @@ void repositionWindows(void)
     mvwin(infoWin, y, 0);
 
     //Resize windows to prevent breaking when terminal is resized below window size
-    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    for(uint8_t i = 0; i < numPanels; i++)
     {
         wresize(panels[i].window, WIN_HEIGHT, WIN_WIDTH);
     }
@@ -103,15 +102,18 @@ int main(int argc, char* argv[])
     keypad(stdscr, true);
     timeout(0);
 
-    loadConfig();
+    if(loadConfig())
+    {
+        //Couldn't load config, use initial one instead
+        setInitialConfig();
+    }
 
     //Set up panels
-    panels[0].type = P_CPU;
-    panels[1].type = P_RAM;
-    panels[2].type = P_GPU;
-    panels[3].type = P_NETWORK;
-    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    panels = malloc(sizeof(Panel) * numPanels);
+    for(uint8_t i = 0; i < numPanels; i++)
     {
+        panels[i].type = getPanelTypes()[i];
+
         if(initPanel(&panels[i]))
         {
             endwin();
@@ -132,9 +134,9 @@ int main(int argc, char* argv[])
         //Draw main window
         wattrset(stdscr, A_BOLD);
         uint8_t titleX = (screenX / PANEL_WIDTH) * PANEL_WIDTH / 2 - 2;
-        if(titleX > NUM_PANELS * PANEL_WIDTH / 2 - 2)
+        if(titleX > numPanels * PANEL_WIDTH / 2 - 2)
         {
-            titleX = NUM_PANELS * PANEL_WIDTH / 2 - 2;
+            titleX = numPanels * PANEL_WIDTH / 2 - 2;
         }
         mvaddstr(0, titleX, "spmon");
         refresh();
@@ -145,7 +147,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            for(uint8_t i = 0; i < NUM_PANELS; i++)
+            for(uint8_t i = 0; i < numPanels; i++)
             {
                 updatePanel(&panels[i]);
             }
@@ -184,11 +186,12 @@ int main(int argc, char* argv[])
         }
     }
 
-    for(uint8_t i = 0; i < NUM_PANELS; i++)
+    for(uint8_t i = 0; i < numPanels; i++)
     {
         quitPanel(&panels[i]);
     }
-
+    free(panels);
+    quitSetup();
     endwin();
 
     return 0;
