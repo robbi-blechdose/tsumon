@@ -99,6 +99,8 @@ void initNetworkPanel(Panel* panel)
     {
         strcpy(panel->title, "CANNOT DETECT");
     }
+    //Do one read to make sure the first actual read has a valid previous value
+    readNetworkUsage(panel);
 }
 
 void drawNetworkPanelContents(Panel* panel)

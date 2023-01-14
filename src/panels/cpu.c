@@ -103,6 +103,8 @@ void initCPUPanel(Panel* panel)
     {
         strcpy(panel->title, "CANNOT DETECT");
     }
+    //Do one read to make sure the first actual read has a valid previous value
+    readCPUUsage(panel);
 }
 
 void drawCPUPanelContents(Panel* panel)

@@ -63,6 +63,7 @@ void repositionWindows(void)
     {
         wclear(panels[i].window);
     }
+    wclear(setupWin);
 
     //Layout windows
     //We can only layout for a minimum width
@@ -92,6 +93,7 @@ void repositionWindows(void)
     }
 
     wresize(infoWin, 1, WIN_WIDTH);
+    wresize(setupWin, SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH);
 }
 
 int main(int argc, char* argv[])
@@ -100,6 +102,8 @@ int main(int argc, char* argv[])
 
     keypad(stdscr, true);
     timeout(0);
+
+    loadConfig();
 
     //Set up panels
     panels[0].type = P_CPU;
@@ -119,19 +123,20 @@ int main(int argc, char* argv[])
     //Set up display windows
     //Positions don't matter since they're set by the first repositionWindows() call
     infoWin = newwin(1, WIN_WIDTH, 0, 0);
-    setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 2, 0);
+    setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 1, 0);
     getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
-
-    //Do a first read to prevent too-large values
-    //readCPUUsage(&cpu);
-    //readNetworkUsage(&net);
 
     while(true)
     {
         //Draw main window
         wattrset(stdscr, A_BOLD);
-        mvaddstr(0, screenX / 2 - 2, "spmon");
+        uint8_t titleX = (screenX / PANEL_WIDTH) * PANEL_WIDTH / 2 - 2;
+        if(titleX > NUM_PANELS * PANEL_WIDTH / 2 - 2)
+        {
+            titleX = NUM_PANELS * PANEL_WIDTH / 2 - 2;
+        }
+        mvaddstr(0, titleX, "spmon");
         refresh();
 
         if(setupOpen)
@@ -162,6 +167,11 @@ int main(int argc, char* argv[])
         {
             setupOpen = !setupOpen;
             wclear(stdscr);
+            if(!setupOpen)
+            {
+                //We closed the setup screen
+                saveConfig();
+            }
         }
         else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
         {

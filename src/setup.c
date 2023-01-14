@@ -1,5 +1,7 @@
 #include "setup.h"
 
+#include <stdlib.h>
+#include <string.h>
 #include "display.h"
 
 #define CURSOR_REFRESH 0
@@ -67,4 +69,52 @@ void moveSetupCursorLR(bool left)
 uint16_t getRefreshInterval()
 {
     return refreshIntervals[refreshIntervalIndex];
+}
+
+char* getFullConfigPath()
+{
+    size_t length = strlen(getenv("HOME")) + strlen("/.config/") + strlen(CONFIG_NAME) + 1;
+    char* configPath = malloc(length);
+    strcpy(configPath, getenv("HOME"));
+    strcat(configPath, "/.config/");
+    strcat(configPath, CONFIG_NAME);
+    return configPath;
+}
+
+uint8_t saveConfig()
+{
+    char* configPath = getFullConfigPath();
+    FILE* config = fopen(configPath, "wb");
+    free(configPath);
+    if(config == NULL)
+    {
+        return 1;
+    }
+
+    if(fwrite(&refreshIntervalIndex, sizeof(refreshIntervalIndex), 1, config) != 1)
+    {
+        return 2;
+    }
+
+    fclose(config);
+    return 0;
+}
+
+uint8_t loadConfig()
+{
+    char* configPath = getFullConfigPath();
+    FILE* config = fopen(configPath, "rb");
+    free(configPath);
+    if(config == NULL)
+    {
+        return 1;
+    }
+
+    if(fread(&refreshIntervalIndex, sizeof(refreshIntervalIndex), 1, config) != 1)
+    {
+        return 2;
+    }
+
+    fclose(config);
+    return 0;
 }
