@@ -24,6 +24,12 @@ typedef struct {
     uint8_t y;
 } Panel;
 
+#define NUM_PANEL_TYPES 4
+extern const char* panelNames[NUM_PANEL_TYPES];
+
+extern uint8_t numPanels;
+extern Panel* panels;
+
 uint8_t initPanel(Panel* panel);
 void updatePanel(Panel* panel);
 void quitPanel(Panel* panel);

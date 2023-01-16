@@ -46,6 +46,11 @@ uint8_t readNetworkUsage(Panel* panel)
         }
     }
 
+    if(line != NULL)
+    {
+        free(line);
+    }
+
     //Calculate difference
     net->down = totalDown - net->totalDownLast;
     net->up = totalUp - net->totalUpLast;
@@ -76,6 +81,10 @@ uint8_t getInterfaceName(char* name)
             fclose(netdev);
             return 2;
         }
+    }
+    if(line != NULL)
+    {
+        free(line);
     }
 
     if(getline(&line, &n, netdev) > 0)

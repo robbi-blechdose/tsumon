@@ -7,13 +7,15 @@
 #include "panels/network.h"
 #include "display.h"
 
-const char* panelNames[4] = {
+const char* panelNames[NUM_PANEL_TYPES] = {
     [P_CPU] = "CPU",
     [P_RAM] = "RAM",
     [P_GPU] = "GPU",
     [P_NETWORK] = "Network"
 };
-#define MAX_NAME_LENGTH 7
+
+uint8_t numPanels;
+Panel* panels;
 
 uint8_t initPanel(Panel* panel)
 {

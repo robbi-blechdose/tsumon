@@ -37,8 +37,6 @@ int32_t screenX, screenY;
 WINDOW* infoWin;
 WINDOW* setupWin;
 
-Panel* panels;
-
 bool setupOpen = false;
 
 void drawInfoWin(void)
@@ -65,25 +63,32 @@ void repositionWindows(void)
     wclear(setupWin);
 
     //Layout windows
-    //We can only layout for a minimum width
-    if(screenX < PANEL_WIDTH)
+    if(setupOpen)
     {
-        screenX = PANEL_WIDTH;
+        mvwin(infoWin, SETUP_WIN_HEIGHT + 1, 0);
     }
-    uint8_t y = 1;
-    uint8_t x = 0;
-    for(uint8_t i = 0; i < numPanels; i++)
+    else
     {
-        mvwin(panels[i].window, y, x);
-        x += PANEL_WIDTH;
-        if(x + PANEL_WIDTH > screenX || i == numPanels - 1)
+        //We can only layout for a minimum width
+        if(screenX < PANEL_WIDTH)
         {
-            x = 0;
-            y += PANEL_HEIGHT;
+            screenX = PANEL_WIDTH;
         }
-    }
+        uint8_t y = 1;
+        uint8_t x = 0;
+        for(uint8_t i = 0; i < numPanels; i++)
+        {
+            mvwin(panels[i].window, y, x);
+            x += PANEL_WIDTH;
+            if(x + PANEL_WIDTH > screenX || i == numPanels - 1)
+            {
+                x = 0;
+                y += PANEL_HEIGHT;
+            }
+        }
 
-    mvwin(infoWin, y, 0);
+        mvwin(infoWin, y, 0);
+    }
 
     //Resize windows to prevent breaking when terminal is resized below window size
     for(uint8_t i = 0; i < numPanels; i++)
@@ -101,6 +106,7 @@ int main(int argc, char* argv[])
 
     keypad(stdscr, true);
     timeout(0);
+    ESCDELAY = 100;
 
     if(loadConfig())
     {
@@ -109,11 +115,8 @@ int main(int argc, char* argv[])
     }
 
     //Set up panels
-    panels = malloc(sizeof(Panel) * numPanels);
     for(uint8_t i = 0; i < numPanels; i++)
     {
-        panels[i].type = getPanelTypes()[i];
-
         if(initPanel(&panels[i]))
         {
             endwin();
@@ -168,7 +171,7 @@ int main(int argc, char* argv[])
         else if(c == KEY_F(2))
         {
             setupOpen = !setupOpen;
-            wclear(stdscr);
+            repositionWindows();
             if(!setupOpen)
             {
                 //We closed the setup screen
@@ -178,6 +181,18 @@ int main(int argc, char* argv[])
         else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
         {
             moveSetupCursorLR(c == KEY_LEFT);
+        }
+        else if((c == KEY_UP || c == KEY_DOWN) && setupOpen)
+        {
+            moveSetupCursorUD(c == KEY_UP);
+        }
+        else if((c == KEY_ENTER || c == '\n') && setupOpen)
+        {
+            enterSetupCursor();
+        }
+        else if(c == 27 && setupOpen) //Escape key
+        {
+            cancelSetupCursor();
         }
         else if(c == KEY_RESIZE)
         {
@@ -191,7 +206,6 @@ int main(int argc, char* argv[])
         quitPanel(&panels[i]);
     }
     free(panels);
-    quitSetup();
     endwin();
 
     return 0;

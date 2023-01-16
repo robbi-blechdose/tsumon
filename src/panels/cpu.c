@@ -87,9 +87,14 @@ uint8_t getCPUName(char* name)
             char* start = strstr(line, ":");
             strncpy(name, start + 2, PANEL_WIDTH - 1);
             name[PANEL_WIDTH - 2] = '\0'; //Add null terminator
+            free(line);
             fclose(cpuinfo);
             return 0;
         }
+    }
+    if(line != NULL)
+    {
+        free(line);
     }
     fclose(cpuinfo);
     return 2;
