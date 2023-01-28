@@ -32,6 +32,7 @@ extern Panel* panels;
 
 uint8_t initPanel(Panel* panel);
 void updatePanel(Panel* panel);
+void drawPanelSettings(WINDOW* win, Panel* panel);
 void quitPanel(Panel* panel);
 
 #endif

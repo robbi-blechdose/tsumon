@@ -87,6 +87,23 @@ void updatePanel(Panel* panel)
     wrefresh(panel->window);
 }
 
+void drawPanelSettings(WINDOW* win, Panel* panel)
+{
+    switch(panel->type)
+    {
+        case P_NETWORK:
+        {
+            drawNetworkPanelSettings(win, panel);
+            wrefresh(win);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+}
+
 void quitPanel(Panel* panel)
 {
     free(panel->data);

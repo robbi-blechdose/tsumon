@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "display.h"
+#include "panels/network.h"
 
 #define CURSOR_REFRESH 0
 #define CURSOR_PANELS  1
@@ -12,10 +13,12 @@ static bool panelSelected = false;
 static int8_t panelCursor = 0;
 
 #define PAC_ADD    0
-#define PAC_REMOVE 1
+#define PAC_EDIT   1
+#define PAC_REMOVE 2
 static int8_t panelActionCursor = 0;
 
 static int8_t panelAddCursor = 0;
+bool panelEditOpen = false;
 
 #define NUM_REFRESH_INTERVALS 4
 const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS] = {
@@ -26,7 +29,7 @@ const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS] = {
 };
 static int8_t refreshIntervalIndex = 0;
 
-void drawSetup(WINDOW* win)
+void drawSetup(WINDOW* win, WINDOW* editWin)
 {
     uint8_t x;
     char buffer[SETUP_WIN_WIDTH - 1];
@@ -66,7 +69,8 @@ void drawSetup(WINDOW* win)
         mvwaddstr(win, 5, x + 1, panelNames[i]);
         x += strlen(panelNames[i]) + 2;
     }
-    mvwaddstr(win, 6, 5, "Remove");
+    mvwaddstr(win, 6, 5, "Edit");
+    mvwaddstr(win, 7, 5, "Remove");
 
     //Draw main cursor
     wattrset(win, A_BOLD);
@@ -74,10 +78,19 @@ void drawSetup(WINDOW* win)
     mvwaddch(win, mainCursor ? 1 : 3, 1, ' ');
     //Draw panel action cursor
     mvwaddch(win, 5, 3, panelSelected && panelActionCursor == PAC_ADD ? '>' : ' ');
-    mvwaddch(win, 6, 3, panelSelected && panelActionCursor == PAC_REMOVE ? '>' : ' ');
+    mvwaddch(win, 6, 3, panelSelected && panelActionCursor == PAC_EDIT ? '>' : ' ');
+    mvwaddch(win, 7, 3, panelSelected && panelActionCursor == PAC_REMOVE ? '>' : ' ');
     wattrset(win, 0);
 
-    wrefresh(win);
+    if(panelEditOpen)
+    {
+        drawTitledWindow(editWin, "Settings", SETUP_EDIT_WIN_WIDTH);
+        drawPanelSettings(editWin, &panels[panelCursor]);
+    }
+    else
+    {
+        wrefresh(win);
+    }
 }
 
 void moveCursor(int8_t* cursor, bool dec, int8_t max)
@@ -136,7 +149,15 @@ void moveSetupCursorUD(bool up)
     }
     else if(panelSelected)
     {
-        moveCursor(&panelActionCursor, up, 1);
+        if(panelEditOpen)
+        {
+            //This can currently only happen for a network panel, so no need to check the type
+            moveNetworkPanelSettingsCursor(&panels[panelCursor], up);
+        }
+        else
+        {
+            moveCursor(&panelActionCursor, up, 2);
+        }
     }
 }
 
@@ -173,7 +194,17 @@ void enterSetupCursor()
             free(panels);
             panels = newPanels;
         }
-        else
+        else if(panelActionCursor == PAC_EDIT)
+        {
+            panelSelected = true;
+            //Only network currently has settings
+            if(panels[panelCursor].type != P_NETWORK)
+            {
+                return;
+            }
+            panelEditOpen = true;
+        }
+        else //if(panelActionCursor == PAC_REMOVE)
         {
             if(panelCursor == numPanels)
             {
@@ -205,8 +236,20 @@ void cancelSetupCursor()
     }
     if(panelSelected)
     {
-        panelSelected = false;
+        if(panelEditOpen)
+        {
+            panelEditOpen = false;
+        }
+        else
+        {
+            panelSelected = false;
+        }
     }
+}
+
+bool canExitSetup()
+{
+    return !panelEditOpen;
 }
 
 uint16_t getRefreshInterval()

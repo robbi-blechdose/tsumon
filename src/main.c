@@ -36,6 +36,7 @@ int32_t screenX, screenY;
 //Windows
 WINDOW* infoWin;
 WINDOW* setupWin;
+WINDOW* setupEditWin;
 
 bool setupOpen = false;
 
@@ -61,6 +62,7 @@ void repositionWindows(void)
         wclear(panels[i].window);
     }
     wclear(setupWin);
+    wclear(setupEditWin);
 
     //Layout windows
     if(setupOpen)
@@ -98,6 +100,7 @@ void repositionWindows(void)
 
     wresize(infoWin, 1, WIN_WIDTH);
     wresize(setupWin, SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH);
+    wresize(setupEditWin, SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH);
 }
 
 int main(int argc, char* argv[])
@@ -129,6 +132,8 @@ int main(int argc, char* argv[])
     //Positions don't matter since they're set by the first repositionWindows() call
     infoWin = newwin(1, WIN_WIDTH, 0, 0);
     setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 1, 0);
+    setupEditWin = newwin(SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH,
+                            SETUP_WIN_HEIGHT / 2 - SETUP_EDIT_WIN_HEIGHT / 2, SETUP_WIN_WIDTH / 2 - SETUP_EDIT_WIN_WIDTH / 2);
     getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
 
@@ -146,7 +151,7 @@ int main(int argc, char* argv[])
 
         if(setupOpen)
         {
-            drawSetup(setupWin);
+            drawSetup(setupWin, setupEditWin);
         }
         else
         {
@@ -170,12 +175,17 @@ int main(int argc, char* argv[])
         }
         else if(c == KEY_F(2))
         {
-            setupOpen = !setupOpen;
-            repositionWindows();
-            if(!setupOpen)
+            if(setupOpen && canExitSetup())
             {
+                setupOpen = false;
                 //We closed the setup screen
                 saveConfig();
+                repositionWindows();
+            }
+            else if(!setupOpen)
+            {
+                setupOpen = true;
+                repositionWindows();
             }
         }
         else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
