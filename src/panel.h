@@ -8,7 +8,8 @@ typedef enum {
     P_CPU,
     P_RAM,
     P_GPU,
-    P_NETWORK
+    P_NETWORK,
+    P_FETCH
 } PanelType;
 
 #define PANEL_HEIGHT 5
@@ -24,7 +25,7 @@ typedef struct {
     uint8_t y;
 } Panel;
 
-#define NUM_PANEL_TYPES 4
+#define NUM_PANEL_TYPES 5
 extern const char* panelNames[NUM_PANEL_TYPES];
 
 extern uint8_t numPanels;

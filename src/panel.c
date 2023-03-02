@@ -5,13 +5,15 @@
 #include "panels/ram.h"
 #include "panels/gpu.h"
 #include "panels/network.h"
+#include "panels/fetch.h"
 #include "display.h"
 
 const char* panelNames[NUM_PANEL_TYPES] = {
     [P_CPU] = "CPU",
     [P_RAM] = "RAM",
     [P_GPU] = "GPU",
-    [P_NETWORK] = "Network"
+    [P_NETWORK] = "Network",
+    [P_FETCH] = "System"
 };
 
 uint8_t numPanels;
@@ -39,6 +41,10 @@ uint8_t initPanel(Panel* panel)
         {
             initNetworkPanel(panel);
             return 0;
+        }
+        case P_FETCH:
+        {
+            return initFetchPanel(panel);
         }
         default:
         {
@@ -81,6 +87,11 @@ void updatePanel(Panel* panel)
         {
             readNetworkUsage(panel);
             drawNetworkPanelContents(panel);
+            break;
+        }
+        case P_FETCH:
+        {
+            drawFetchPanelContents(panel);
             break;
         }
     }
