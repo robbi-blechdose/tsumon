@@ -6,6 +6,7 @@
 typedef struct {
     char os[PANEL_WIDTH - 5];
     char kernel[PANEL_WIDTH - 9];
+    char hostname[PANEL_WIDTH - 11];
 } FetchData;
 
 uint8_t getOS(char* os)
@@ -44,6 +45,24 @@ uint8_t getKernel(char* kernel)
     return 0;
 }
 
+uint8_t getHostname(char* hostname)
+{
+    FILE* hnfile = fopen("/proc/sys/kernel/hostname", "r");
+    if(hnfile == NULL)
+    {
+        return 1;
+    }
+
+    if(fscanf(hnfile, "%s", hostname) != 1)
+    {
+        fclose(hnfile);
+        return 2;
+    }
+
+    fclose(hnfile);
+    return 0;
+}
+
 uint8_t initFetchPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
@@ -57,14 +76,25 @@ uint8_t initFetchPanel(Panel* panel)
     {
         return err;
     }
+    err = getHostname(data->hostname);
+    if(err)
+    {
+        return err;
+    }
     return getKernel(data->kernel);
 }
 
 void drawFetchPanelContents(Panel* panel)
 {
-    FetchData* data = (FetchData*) panel->data;
+    //Draw titles
+    wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, "OS:");
-    mvwaddstr(panel->window, 1, 5, data->os);
     mvwaddstr(panel->window, 2, 1, "Kernel:");
+    mvwaddstr(panel->window, 3, 1, "Hostname:");
+    //Draw contents
+    wattrset(panel->window, 0);
+    FetchData* data = (FetchData*) panel->data;
+    mvwaddstr(panel->window, 1, 5, data->os);
     mvwaddstr(panel->window, 2, 9, data->kernel);
+    mvwaddstr(panel->window, 3, 11, data->hostname);
 }
