@@ -12,8 +12,8 @@ typedef enum {
     P_FETCH
 } PanelType;
 
-#define PANEL_HEIGHT 5
-#define PANEL_WIDTH 30
+#define PANEL_HEIGHT 6
+#define PANEL_WIDTH 35
 
 typedef struct {
     PanelType type;

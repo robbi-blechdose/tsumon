@@ -34,6 +34,8 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value);
  **/
 void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value);
 
+void drawTitledBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value, const char* title);
+
 /**
  * Draws a box with a centered title for a window
  * @param win Window to draw to

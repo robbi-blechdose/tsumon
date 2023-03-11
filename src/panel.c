@@ -79,6 +79,7 @@ void updatePanel(Panel* panel)
         case P_GPU:
         {
             readGPUUsage(panel);
+            readGPUMemoryUsage(panel);
             readGPUTemperature(panel);
             drawGPUPanelContents(panel);
             break;
@@ -91,6 +92,7 @@ void updatePanel(Panel* panel)
         }
         case P_FETCH:
         {
+            readUptime(panel);
             drawFetchPanelContents(panel);
             break;
         }

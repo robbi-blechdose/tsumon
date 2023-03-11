@@ -7,6 +7,7 @@ typedef struct {
     char os[PANEL_WIDTH - 5];
     char kernel[PANEL_WIDTH - 9];
     char hostname[PANEL_WIDTH - 11];
+    double uptime;
 } FetchData;
 
 uint8_t getOS(char* os)
@@ -63,6 +64,24 @@ uint8_t getHostname(char* hostname)
     return 0;
 }
 
+uint8_t readUptime(Panel* panel)
+{
+    FILE* uptime = fopen("/proc/uptime", "r");
+    if(uptime == NULL)
+    {
+        return 1;
+    }
+
+    if(fscanf(uptime, "%lf", &((FetchData*) panel->data)->uptime) != 1)
+    {
+        fclose(uptime);
+        return 2;
+    }
+
+    fclose(uptime);
+    return 0;
+}
+
 uint8_t initFetchPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
@@ -91,10 +110,17 @@ void drawFetchPanelContents(Panel* panel)
     mvwaddstr(panel->window, 1, 1, "OS:");
     mvwaddstr(panel->window, 2, 1, "Kernel:");
     mvwaddstr(panel->window, 3, 1, "Hostname:");
+    mvwaddstr(panel->window, 4, 1, "Uptime:");
     //Draw contents
     wattrset(panel->window, 0);
     FetchData* data = (FetchData*) panel->data;
     mvwaddstr(panel->window, 1, 5, data->os);
     mvwaddstr(panel->window, 2, 9, data->kernel);
     mvwaddstr(panel->window, 3, 11, data->hostname);
+
+    char buffer[PANEL_WIDTH - 9];
+    uint32_t hours = data->uptime / 3600;
+    float mins = data->uptime / 60 - (hours * 60);
+    sprintf(buffer, "%2.0f:%2.0f", (float) hours, mins);
+    mvwaddstr(panel->window, 4, 9, buffer);
 }

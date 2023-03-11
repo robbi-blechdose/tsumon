@@ -29,9 +29,6 @@
 #include "panel.h"
 #include "setup.h"
 
-#define WIN_HEIGHT 5
-#define WIN_WIDTH 30
-
 int32_t screenX, screenY;
 //Windows
 WINDOW* infoWin;
@@ -95,10 +92,10 @@ void repositionWindows(void)
     //Resize windows to prevent breaking when terminal is resized below window size
     for(uint8_t i = 0; i < numPanels; i++)
     {
-        wresize(panels[i].window, WIN_HEIGHT, WIN_WIDTH);
+        wresize(panels[i].window, PANEL_HEIGHT, PANEL_WIDTH);
     }
 
-    wresize(infoWin, 1, WIN_WIDTH);
+    wresize(infoWin, 1, PANEL_WIDTH);
     wresize(setupWin, SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH);
     wresize(setupEditWin, SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH);
 }
@@ -130,7 +127,7 @@ int main(int argc, char* argv[])
 
     //Set up display windows
     //Positions don't matter since they're set by the first repositionWindows() call
-    infoWin = newwin(1, WIN_WIDTH, 0, 0);
+    infoWin = newwin(1, PANEL_WIDTH, 0, 0);
     setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 1, 0);
     setupEditWin = newwin(SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH,
                             SETUP_WIN_HEIGHT / 2 - SETUP_EDIT_WIN_HEIGHT / 2, SETUP_WIN_WIDTH / 2 - SETUP_EDIT_WIN_WIDTH / 2);

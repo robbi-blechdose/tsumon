@@ -8,6 +8,7 @@ uint8_t initGPU(void);
 void quitGPU(void);
 
 uint8_t readGPUUsage(Panel* panel);
+uint8_t readGPUMemoryUsage(Panel* panel);
 uint8_t readGPUTemperature(Panel* panel);
 
 uint8_t initGPUPanel(Panel* panel);

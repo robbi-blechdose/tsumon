@@ -9,6 +9,7 @@ static nvmlDevice_t device;
 
 typedef struct {
     float usagePercent;
+    float memPercent;
     float temperature;
 } GPUStatus;
 
@@ -38,6 +39,17 @@ uint8_t readGPUUsage(Panel* panel)
         return 1;
     }
     ((GPUStatus*) panel->data)->usagePercent = util.gpu;
+    return 0;
+}
+
+uint8_t readGPUMemoryUsage(Panel* panel)
+{
+    nvmlMemory_t memory;
+    if(nvmlDeviceGetMemoryInfo(device, &memory) != NVML_SUCCESS)
+    {
+        return 1;
+    }
+    ((GPUStatus*) panel->data)->memPercent = (((float) memory.used) / memory.total) * 100;
     return 0;
 }
 
@@ -82,7 +94,8 @@ void drawGPUPanelContents(Panel* panel)
     char buffer[PANEL_WIDTH];
     GPUStatus* gpu = (GPUStatus*) panel->data;
 
-    drawBarWithPercentage(panel->window, 2, 1, gpu->usagePercent);
+    drawTitledBarWithPercentage(panel->window, 2, 1, gpu->usagePercent, "GPU:");
+    drawTitledBarWithPercentage(panel->window, 3, 1, gpu->memPercent, "MEM:");
     sprintf(buffer, "Temp: %4.1f °C", gpu->temperature);
-    mvwaddstr(panel->window, 3, 1, buffer);
+    mvwaddstr(panel->window, 4, 1, buffer);
 }

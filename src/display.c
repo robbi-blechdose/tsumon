@@ -61,6 +61,12 @@ void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value)
     mvwaddstr(win, y, x + 22, buffer);
 }
 
+void drawTitledBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value, const char* title)
+{
+    mvwaddstr(win, y, x, title);
+    drawBarWithPercentage(win, y, x + strlen(title) + 1, value);
+}
+
 void drawTitledWindow(WINDOW* win, const char* title, uint8_t width)
 {
     wcolor_set(win, C_WB, 0);
