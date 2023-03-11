@@ -9,6 +9,7 @@
 typedef struct {
     uint8_t numInterfaces;
     uint8_t interfaceIndex;
+    char interfaceName[PANEL_WIDTH - 1];
     uint64_t totalDownLast;
     uint64_t totalUpLast;
     uint64_t down;
@@ -136,12 +137,12 @@ void initNetworkPanel(Panel* panel)
 
     if(getNumInterfaces(&net->numInterfaces))
     {
-        strcpy(panel->title, "NO INTERFACES");
+        strcpy(net->interfaceName, "NO INTERFACES");
     }
     net->interfaceIndex = 1; //Default to first interface after LO
-    if(getInterfaceName(panel->title, net->interfaceIndex))
+    if(getInterfaceName(net->interfaceName, net->interfaceIndex))
     {
-        strcpy(panel->title, "CANNOT DETECT");
+        strcpy(net->interfaceName, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
     readNetworkUsage(panel);
@@ -152,6 +153,9 @@ void drawNetworkPanelContents(Panel* panel)
     char buffer[PANEL_WIDTH];
     NetStatus* net = (NetStatus*) panel->data;
 
+    wattrset(panel->window, A_BOLD);
+    mvwaddstr(panel->window, 1, 1, net->interfaceName);
+    wattrset(panel->window, 0);
     sprintf(buffer, "Down: %6.2f MiB/s", B_TO_MB(net->down));
     mvwaddstr(panel->window, 2, 1, buffer);
     sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net->up));
@@ -192,9 +196,9 @@ void moveNetworkPanelSettingsCursor(Panel* panel, bool up)
     }
     
     //Reload name and usage
-    if(getInterfaceName(panel->title, net->interfaceIndex))
+    if(getInterfaceName(net->interfaceName, net->interfaceIndex))
     {
-        strcpy(panel->title, "CANNOT DETECT");
+        strcpy(net->interfaceName, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
     readNetworkUsage(panel);

@@ -5,10 +5,7 @@
 #include <ncurses.h>
 #include "../panel.h"
 
-uint8_t readCPUUsage(Panel* panel);
-uint8_t readCPUTemperature(Panel* panel);
-
 void initCPUPanel(Panel* panel);
-void drawCPUPanelContents(Panel* panel);
+void updateCPUPanel(Panel* panel);
 
 #endif

@@ -86,7 +86,6 @@ uint8_t initFetchPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(FetchData));
-    strcpy(panel->title, "");
 
     //Read data - this doesn't change so doing it on startup is enough
     FetchData* data = (FetchData*) panel->data;

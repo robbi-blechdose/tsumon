@@ -42,7 +42,6 @@ void initRAMPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(RAMStatus));
-    strcpy(panel->title, "");
 }
 
 void drawRAMPanelContents(Panel* panel)

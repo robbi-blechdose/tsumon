@@ -7,16 +7,15 @@
 #include "../display.h"
 
 typedef struct {
+    char name[PANEL_WIDTH - 1];
     uint64_t totalLast;
     uint64_t idleLast;
     float usagePercent;
     float temperature;
 } CPUStatus;
 
-uint8_t readCPUUsage(Panel* panel)
+uint8_t readCPUUsage(CPUStatus* cpu)
 {
-    CPUStatus* cpu = (CPUStatus*) panel->data;
-
     //Read new values from /proc/stat
     FILE* stat = fopen("/proc/stat", "r");
     if(stat == NULL)
@@ -48,10 +47,8 @@ uint8_t readCPUUsage(Panel* panel)
     return 0;
 }
 
-uint8_t readCPUTemperature(Panel* panel)
+uint8_t readCPUTemperature(CPUStatus* cpu)
 {
-    CPUStatus* cpu = (CPUStatus*) panel->data;
-
     FILE* hwmon1 = fopen("/sys/class/hwmon/hwmon1/temp1_input", "r");
     if(hwmon1 == NULL)
     {
@@ -104,12 +101,13 @@ void initCPUPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->data = malloc(sizeof(CPUStatus));
-    if(getCPUName(panel->title))
+    CPUStatus* cpu = (CPUStatus*) panel->data;
+    if(getCPUName(cpu->name))
     {
-        strcpy(panel->title, "CANNOT DETECT");
+        strcpy(cpu->name, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
-    readCPUUsage(panel);
+    readCPUUsage((CPUStatus*) panel->data);
 }
 
 void drawCPUPanelContents(Panel* panel)
@@ -117,7 +115,18 @@ void drawCPUPanelContents(Panel* panel)
     char buffer[PANEL_WIDTH];
     CPUStatus* cpu = (CPUStatus*) panel->data;
 
+    wattrset(panel->window, A_BOLD);
+    mvwaddstr(panel->window, 1, 1, cpu->name);
+    wattrset(panel->window, 0);
     drawBarWithPercentage(panel->window, 2, 1, cpu->usagePercent);
     sprintf(buffer, "Temp: %4.1f °C", cpu->temperature);
     mvwaddstr(panel->window, 3, 1, buffer);
+}
+
+void updateCPUPanel(Panel* panel)
+{
+    CPUStatus* cpu = (CPUStatus*) panel->data;
+    readCPUUsage(cpu);
+    readCPUTemperature(cpu);
+    drawCPUPanelContents(panel);
 }

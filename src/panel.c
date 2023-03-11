@@ -57,17 +57,12 @@ uint8_t initPanel(Panel* panel)
 void updatePanel(Panel* panel)
 {
     drawTitledWindow(panel->window, panelNames[panel->type], PANEL_WIDTH);
-    wattrset(panel->window, A_BOLD);
-    mvwaddstr(panel->window, 1, 1, panel->title);
-    wattrset(panel->window, 0);
 
     switch(panel->type)
     {
         case P_CPU:
         {
-            readCPUUsage(panel);
-            readCPUTemperature(panel);
-            drawCPUPanelContents(panel);
+            updateCPUPanel(panel);
             break;
         }
         case P_RAM:
@@ -78,10 +73,7 @@ void updatePanel(Panel* panel)
         }
         case P_GPU:
         {
-            readGPUUsage(panel);
-            readGPUMemoryUsage(panel);
-            readGPUTemperature(panel);
-            drawGPUPanelContents(panel);
+            updateGPUPanel(panel);
             break;
         }
         case P_NETWORK:

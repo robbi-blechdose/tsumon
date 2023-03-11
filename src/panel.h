@@ -17,7 +17,6 @@ typedef enum {
 
 typedef struct {
     PanelType type;
-    char title[PANEL_WIDTH - 1];
     void* data;
 
     WINDOW* window;
