@@ -3,7 +3,7 @@ CC		= gcc
 CFLAGS	= -Wall -g
 LDFLAGS	= -lncurses -lnvidia-ml
 
-PNAME	= spmon
+PNAME	= tsumon
 
 # Files to be compiled
 SRCDIR	=  ./src ./src/panels

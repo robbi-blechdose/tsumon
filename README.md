@@ -1,10 +1,10 @@
-# spmon - Small Performance Monitor
+# tsumon - Terminal System Usage MONitor
 
-This tool reads near-realtime (interval: 1s) system usage statistics and display them in the terminal.
+This tool reads near-realtime (interval: 0.25s - 5s) system usage statistics and display them in the terminal.
 Currently, it shows:
 - CPU usage and temperature
 - RAM usage
-- GPU usage and temperature
+- GPU usage and temperature, GPU memory usage
 - Network usage (up/down)
 
 ## Supported hardware

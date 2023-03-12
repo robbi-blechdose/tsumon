@@ -1,7 +1,7 @@
 /**
- * Small Performance MONitor
+ * tsumon - Terminal System Usage MONitor
  * 
- * Displays CPU, RAM, GPU and network usage
+ * Displays near-realtime system usage statistics in a terminal UI
  * 
  * Copyright (C) 2022-2023 Robbi Blechdose
  * 
@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
         {
             titleX = numPanels * PANEL_WIDTH / 2 - 2;
         }
-        mvaddstr(0, titleX, "spmon");
+        mvaddstr(0, titleX, "tsumon");
         refresh();
 
         if(setupOpen)
