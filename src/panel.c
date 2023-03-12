@@ -53,8 +53,7 @@ uint8_t initPanel(Panel* panel)
     }
 }
 
-//Discards errors from input functions for now
-void updatePanel(Panel* panel)
+void updatePanel(Panel* panel, uint16_t refreshInterval)
 {
     drawTitledWindow(panel->window, panelNames[panel->type], PANEL_WIDTH);
 
@@ -78,8 +77,7 @@ void updatePanel(Panel* panel)
         }
         case P_NETWORK:
         {
-            readNetworkUsage(panel);
-            drawNetworkPanelContents(panel);
+            updateNetworkPanel(panel, refreshInterval);
             break;
         }
         case P_FETCH:

@@ -16,10 +16,11 @@ typedef struct {
     uint64_t up;
 } NetStatus;
 
-uint8_t readNetworkUsage(Panel* panel)
+/**
+ * Assumes a 1-second window
+ **/
+uint8_t readNetworkUsage(NetStatus* net)
 {
-    NetStatus* net = (NetStatus*) panel->data;
-
     uint64_t totalDown;
     uint64_t totalUp;
 
@@ -145,7 +146,7 @@ void initNetworkPanel(Panel* panel)
         strcpy(net->interfaceName, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
-    readNetworkUsage(panel);
+    readNetworkUsage(net);
 }
 
 void drawNetworkPanelContents(Panel* panel)
@@ -160,6 +161,15 @@ void drawNetworkPanelContents(Panel* panel)
     mvwaddstr(panel->window, 2, 1, buffer);
     sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net->up));
     mvwaddstr(panel->window, 3, 1, buffer);
+}
+
+void updateNetworkPanel(Panel* panel, uint16_t refreshInterval)
+{
+    NetStatus* net = (NetStatus*) panel->data;
+    readNetworkUsage(net);
+    net->down *= 1.0f / (refreshInterval / 1000.0f);
+    net->up *= 1.0f / (refreshInterval / 1000.0f);
+    drawNetworkPanelContents(panel);
 }
 
 void drawNetworkPanelSettings(WINDOW* win, Panel* panel)

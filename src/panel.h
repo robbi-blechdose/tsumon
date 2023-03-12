@@ -31,7 +31,7 @@ extern uint8_t numPanels;
 extern Panel* panels;
 
 uint8_t initPanel(Panel* panel);
-void updatePanel(Panel* panel);
+void updatePanel(Panel* panel, uint16_t refreshInterval);
 void drawPanelSettings(WINDOW* win, Panel* panel);
 void quitPanel(Panel* panel);
 

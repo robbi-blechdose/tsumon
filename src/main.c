@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
         {
             for(uint8_t i = 0; i < numPanels; i++)
             {
-                updatePanel(&panels[i]);
+                updatePanel(&panels[i], getRefreshInterval());
             }
         }
 
