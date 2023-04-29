@@ -3,32 +3,30 @@
 
 #include <stdint.h>
 #include <ncurses.h>
+#include "config.h"
 #include "panel.h"
 
-#define SETUP_WIN_HEIGHT 9
-#define SETUP_WIN_WIDTH 60
+#define SETUP_WIN_HEIGHT 12
+#define SETUP_WIN_WIDTH  60
 
 #define SETUP_EDIT_WIN_HEIGHT 3
 #define SETUP_EDIT_WIN_WIDTH 30
 
-#define CONFIG_NAME "spmon.conf"
-
 extern uint8_t numPanels;
 
-void drawSetup(WINDOW* win, WINDOW* editWin);
+void initSetup(WINDOW* win);
 
-void moveSetupCursorLR(bool left);
-void moveSetupCursorUD(bool up);
-void enterSetupCursor();
+void drawSetup(Configuration* config);
+
+void moveCursor(int8_t* cursor, bool dec, int8_t max);
+
+void moveSetupCursorLR(bool left, Configuration* config);
+void moveSetupCursorUD(bool up, Configuration* config);
+void enterSetupCursor(Configuration* config);
 void cancelSetupCursor();
 
 bool canExitSetup();
 
-uint16_t getRefreshInterval();
 PanelType* getPanelTypes();
-
-uint8_t saveConfig();
-uint8_t loadConfig();
-void setInitialConfig();
 
 #endif

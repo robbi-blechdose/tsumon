@@ -5,83 +5,100 @@
 #include "display.h"
 #include "panels/network.h"
 
-#define CURSOR_REFRESH 0
-#define CURSOR_PANELS  1
-static int8_t mainCursor = 0;
+#include "setup/menu.h"
+#include "setup/general_setup.h"
+#include "setup/panel_setup.h"
 
-static bool panelSelected = false;
-static int8_t panelCursor = 0;
 
-#define PAC_ADD    0
-#define PAC_EDIT   1
-#define PAC_REMOVE 2
-static int8_t panelActionCursor = 0;
+//TODO: switch to derwin() subwindows
+//TODO: add customizable "highlight color" (used for cpu/gpu name, ...)
 
-static int8_t panelAddCursor = 0;
-bool panelEditOpen = false;
 
-#define NUM_REFRESH_INTERVALS 4
-const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS] = {
-     250,
-     500,
-    1000,
-    2000
-};
-static int8_t refreshIntervalIndex = 0;
+#define MM_CURSOR_REFRESH     0
+#define MM_CURSOR_WIDTHLIMIT  1
+#define MM_CURSOR_PANELS      2
+#define MM_CURSOR_LAST        MM_CURSOR_PANELS
+MenuTree menuTree;
 
-void drawSetup(WINDOW* win, WINDOW* editWin)
+void drawMainMenu(MenuTree* menu, Configuration* config)
 {
-    uint8_t x;
-    char buffer[SETUP_WIN_WIDTH - 1];
+    drawTitledWindow(menu->win, "Setup", SETUP_WIN_WIDTH);
+    
+    wattrset(menu->win, A_BOLD);
+    mvwaddch(menu->win, 1, 1, menu->selected && menu->cursor == MM_CURSOR_REFRESH ? '>' : ' ');
+    mvwaddch(menu->win, 3, 1, menu->selected && menu->cursor == MM_CURSOR_WIDTHLIMIT ? '>' : ' ');
+    mvwaddch(menu->win, 5, 1, menu->selected && menu->cursor == MM_CURSOR_PANELS ? '>' : ' ');
+    wattrset(menu->win, 0);
+}
 
-    drawTitledWindow(win, "Setup", SETUP_WIN_WIDTH);
+void moveMainMenuCursor(bool up, MenuTree* menu, Configuration* config)
+{
+    moveCursor(&menu->cursor, up, MM_CURSOR_LAST);
+}
 
+void enterMainCursor(MenuTree* mt, Configuration* config)
+{
+    mt->children[mt->cursor]->selected = true;
+    mt->selected = false;
+}
+
+void initSetup(WINDOW* win)
+{
+    //Main menu (root node, no contents by itself)
+    createMenuTree(&menuTree);
+    menuTree.win = win;
+    menuTree.draw = &drawMainMenu;
+    menuTree.moveCursorUD = &moveMainMenuCursor;
+    menuTree.enterCursor = &enterMainCursor;
+    menuTree.selected = true;
+
+    //General setup
     //Refresh interval
-    mvwaddstr(win, 1, 3, "Refresh interval:");
-    drawSlider(win, 1, 21, NUM_REFRESH_INTERVALS, refreshIntervalIndex);
-    sprintf(buffer, "%3.1fs", refreshIntervals[refreshIntervalIndex] / 1000.0f);
-    mvwaddstr(win, 1, 29, buffer);
+    MenuTree* refreshInterval = malloc(sizeof(MenuTree));
+    createMenuTree(refreshInterval);
+    initRefreshIntervalMenu(refreshInterval);
+    refreshInterval->win = win; //TODO: sub window
+    insertMenuTree(&menuTree, refreshInterval);
 
-    //Panels
-    mvwaddstr(win, 3, 3, "Panels:");
-    x = 11;
-    for(uint8_t i = 0; i < numPanels + 1; i++)
-    {
-        wattrset(win, A_BOLD);
-        mvwaddch(win, 3, x, (mainCursor == CURSOR_PANELS && panelCursor == i) ? '>' : ' ');
-        wattrset(win, 0);
+    //Width limit
+    MenuTree* widthLimit = malloc(sizeof(MenuTree));
+    createMenuTree(widthLimit);
+    initWidthLimitMenu(widthLimit);
+    widthLimit->win = win; //TODO: sub window
+    insertMenuTree(&menuTree, widthLimit);
 
-        if(i < numPanels)
-        {
-            mvwaddstr(win, 3, x + 1, panelNames[panels[i].type]);
-            x += strlen(panelNames[panels[i].type]) + 2;
-        }
-    }
+    //Panel setup
+    //Panel main menu
+    MenuTree* panelMain = malloc(sizeof(MenuTree));
+    createMenuTree(panelMain);
+    initPanelMainMenu(panelMain);
+    panelMain->win = win;
+    insertMenuTree(&menuTree, panelMain);
 
-    mvwaddstr(win, 5, 5, "Add:");
-    x = 11;
-    for(uint8_t i = 0; i < NUM_PANEL_TYPES; i++)
-    {
-        wattrset(win, A_BOLD);
-        mvwaddch(win, 5, x, (mainCursor == CURSOR_PANELS && panelSelected && panelActionCursor == PAC_ADD && panelAddCursor == i) ? '>' : ' ');
-        wattrset(win, 0);
+    //Panel action menu
+    MenuTree* panelAction = malloc(sizeof(MenuTree));
+    createMenuTree(panelAction);
+    initPanelActionMenu(panelAction);
+    panelAction->win = win;
+    insertMenuTree(panelMain, panelAction);
 
-        mvwaddstr(win, 5, x + 1, panelNames[i]);
-        x += strlen(panelNames[i]) + 2;
-    }
-    mvwaddstr(win, 6, 5, "Edit");
-    mvwaddstr(win, 7, 5, "Remove");
+    //Panel add menu
+    MenuTree* panelAdd = malloc(sizeof(MenuTree));
+    createMenuTree(panelAdd);
+    initPanelAddMenu(panelAdd);
+    panelAdd->win = win;
+    insertMenuTree(panelAction, panelAdd);
+}
 
-    //Draw main cursor
-    wattrset(win, A_BOLD);
-    mvwaddch(win, mainCursor ? 3 : 1, 1, '>');
-    mvwaddch(win, mainCursor ? 1 : 3, 1, ' ');
-    //Draw panel action cursor
-    mvwaddch(win, 5, 3, panelSelected && panelActionCursor == PAC_ADD ? '>' : ' ');
-    mvwaddch(win, 6, 3, panelSelected && panelActionCursor == PAC_EDIT ? '>' : ' ');
-    mvwaddch(win, 7, 3, panelSelected && panelActionCursor == PAC_REMOVE ? '>' : ' ');
-    wattrset(win, 0);
+void drawSetup(Configuration* config)
+{
+    drawMenuTree(&menuTree, config);
+    wrefresh(menuTree.win);
 
+
+
+
+    /**
     if(panelEditOpen)
     {
         drawTitledWindow(editWin, "Settings", SETUP_EDIT_WIN_WIDTH);
@@ -90,7 +107,7 @@ void drawSetup(WINDOW* win, WINDOW* editWin)
     else
     {
         wrefresh(win);
-    }
+    }**/
 }
 
 void moveCursor(int8_t* cursor, bool dec, int8_t max)
@@ -113,39 +130,65 @@ void moveCursor(int8_t* cursor, bool dec, int8_t max)
     }
 }
 
-void moveSetupCursorLR(bool left)
+bool moveSetupCursorLRTree(bool left, Configuration* config, MenuTree* mt)
 {
-    switch(mainCursor)
+    if(mt->selected)
     {
-        case CURSOR_REFRESH:
+        if(mt->moveCursorLR != NULL)
         {
-            moveCursor(&refreshIntervalIndex, left, NUM_REFRESH_INTERVALS - 1);
-            break;
+            mt->moveCursorLR(left, mt, config);
         }
-        case CURSOR_PANELS:
+        return true;
+    }
+    else
+    {
+        for(uint8_t i = 0; i < mt->numChildren; i++)
         {
-            if(panelSelected)
+            if(moveSetupCursorLRTree(left, config, mt->children[i]))
             {
-                moveCursor(&panelAddCursor, left, NUM_PANEL_TYPES - 1);
+                return true;
             }
-            else
-            {
-                moveCursor(&panelCursor, left, numPanels);
-            }
-            break;
         }
-        default:
-        {
-            break;
-        }
+        return false;
     }
 }
 
-void moveSetupCursorUD(bool up)
+void moveSetupCursorLR(bool left, Configuration* config)
 {
+    moveSetupCursorLRTree(left, config, &menuTree);
+}
+
+bool moveSetupCursorUDTree(bool up, Configuration* config, MenuTree* mt)
+{
+    if(mt->selected)
+    {
+        if(mt->moveCursorUD != NULL)
+        {
+            mt->moveCursorUD(up, mt, config);
+        }
+        return true;
+    }
+    else
+    {
+        for(uint8_t i = 0; i < mt->numChildren; i++)
+        {
+            if(moveSetupCursorUDTree(up, config, mt->children[i]))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+void moveSetupCursorUD(bool up, Configuration* config)
+{
+    moveSetupCursorUDTree(up, config, &menuTree);
+
+    /**
     if(!(mainCursor == CURSOR_PANELS && panelSelected))
     {
-        moveCursor(&mainCursor, up, 1);
+
     }
     else if(panelSelected)
     {
@@ -154,15 +197,37 @@ void moveSetupCursorUD(bool up)
             //This can currently only happen for a network panel, so no need to check the type
             moveNetworkPanelSettingsCursor(&panels[panelCursor], up);
         }
-        else
-        {
-            moveCursor(&panelActionCursor, up, 2);
-        }
-    }
+    }**/
 }
 
-void enterSetupCursor()
+bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
 {
+    if(mt->selected)
+    {
+        if(mt->enterCursor != NULL)
+        {
+            mt->enterCursor(mt, config);
+        }
+        return true;
+    }
+    else
+    {
+        for(uint8_t i = 0; i < mt->numChildren; i++)
+        {
+            if(enterSetupCursorTree(config, mt->children[i]))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void enterSetupCursor(Configuration* config)
+{
+    enterSetupCursorTree(config, &menuTree);
+    
+    /**
     if(mainCursor != CURSOR_PANELS)
     {
         return;
@@ -176,24 +241,6 @@ void enterSetupCursor()
     {
         panelSelected = false;
 
-        if(panelActionCursor == PAC_ADD)
-        {
-            //Insert panel before current one
-            Panel* newPanels = malloc(sizeof(Panel) * (numPanels + 1));
-            for(uint8_t i = 0; i < panelCursor; i++)
-            {
-                newPanels[i] = panels[i];
-            }
-            newPanels[panelCursor].type = panelAddCursor;
-            initPanel(&newPanels[panelCursor]);
-            for(uint8_t i = panelCursor + 1; i < numPanels + 1; i++)
-            {
-                newPanels[i] = panels[i - 1];
-            }
-            numPanels++;
-            free(panels);
-            panels = newPanels;
-        }
         else if(panelActionCursor == PAC_EDIT)
         {
             panelSelected = true;
@@ -204,143 +251,41 @@ void enterSetupCursor()
             }
             panelEditOpen = true;
         }
-        else //if(panelActionCursor == PAC_REMOVE)
-        {
-            if(panelCursor == numPanels)
-            {
-                return;
-            }
-            //Remove current panel, shift rest back
-            quitPanel(&panels[panelCursor]);
-            Panel* newPanels = malloc(sizeof(Panel) * (numPanels - 1));
-            uint8_t ni = 0;
-            for(uint8_t i = 0; i < numPanels; i++)
-            {
-                if(i != panelCursor)
-                {
-                    newPanels[ni++] = panels[i];
-                }
-            }
-            numPanels--;
-            free(panels);
-            panels = newPanels;
-        }
-    }
+    }**/
 }
 
-void cancelSetupCursor()
+bool cancelSetupCursorTree(Configuration* config, MenuTree* mt)
 {
-    if(mainCursor != CURSOR_PANELS)
+    if(mt->selected)
+    {
+        mt->selected = false;
+        mt->parent->selected = true;
+        return true;
+    }
+    
+    for(uint8_t i = 0; i < mt->numChildren; i++)
+    {
+        if(cancelSetupCursorTree(config, mt->children[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void cancelSetupCursor(Configuration* config)
+{
+    //Can't get out of the root node
+    if(menuTree.selected)
     {
         return;
     }
-    if(panelSelected)
-    {
-        if(panelEditOpen)
-        {
-            panelEditOpen = false;
-        }
-        else
-        {
-            panelSelected = false;
-        }
-    }
+
+    cancelSetupCursorTree(config, &menuTree);
 }
 
 bool canExitSetup()
 {
-    return !panelEditOpen;
-}
-
-uint16_t getRefreshInterval()
-{
-    return refreshIntervals[refreshIntervalIndex];
-}
-
-char* getFullConfigPath()
-{
-    size_t length = strlen(getenv("HOME")) + strlen("/.config/") + strlen(CONFIG_NAME) + 1;
-    char* configPath = malloc(length);
-    strcpy(configPath, getenv("HOME"));
-    strcat(configPath, "/.config/");
-    strcat(configPath, CONFIG_NAME);
-    return configPath;
-}
-
-uint8_t saveConfig()
-{
-    char* configPath = getFullConfigPath();
-    FILE* config = fopen(configPath, "wb");
-    free(configPath);
-    if(config == NULL)
-    {
-        return 1;
-    }
-
-    //Refresh interval
-    if(fwrite(&refreshIntervalIndex, sizeof(refreshIntervalIndex), 1, config) != 1)
-    {
-        return 2;
-    }
-
-    //Panels
-    if(fwrite(&numPanels, sizeof(numPanels), 1, config) != 1)
-    {
-        return 3;
-    }
-    for(uint8_t i = 0; i < numPanels; i++)
-    {
-        if(fwrite(&panels[i].type, sizeof(PanelType), 1, config) != 1)
-        {
-            return 4;
-        }
-    }
-
-    fclose(config);
-    return 0;
-}
-
-uint8_t loadConfig()
-{
-    char* configPath = getFullConfigPath();
-    FILE* config = fopen(configPath, "rb");
-    free(configPath);
-    if(config == NULL)
-    {
-        return 1;
-    }
-
-    //Refresh interval
-    if(fread(&refreshIntervalIndex, sizeof(refreshIntervalIndex), 1, config) != 1)
-    {
-        return 2;
-    }
-    
-    //Panels
-    if(fread(&numPanels, sizeof(numPanels), 1, config) != 1)
-    {
-        return 3;
-    }
-    panels = malloc(sizeof(Panel) * numPanels);
-    for(uint8_t i = 0; i < numPanels; i++)
-    {
-        if(fread(&panels[i].type, sizeof(PanelType), 1, config) != 1)
-        {
-            return 4;
-        }
-    }
-
-    fclose(config);
-    return 0;
-}
-
-void setInitialConfig()
-{
-    refreshIntervalIndex = 1;
-    numPanels = 4;
-    panels = malloc(sizeof(Panel) * 4);
-    panels[0].type = P_CPU;
-    panels[1].type = P_RAM;
-    panels[2].type = P_GPU;
-    panels[3].type = P_NETWORK;
+    //TODO
+    return true;
 }

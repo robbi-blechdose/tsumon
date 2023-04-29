@@ -15,6 +15,8 @@ typedef enum {
 #define PANEL_HEIGHT 6
 #define PANEL_WIDTH 35
 
+//TODO: add height (since it can be different)
+//TODO: add name? (or move it to individual panels)
 typedef struct {
     PanelType type;
     void* data;

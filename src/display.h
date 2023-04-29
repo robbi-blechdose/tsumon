@@ -54,4 +54,6 @@ void drawTitledWindow(WINDOW* win, const char* title, uint8_t width);
  **/
 void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t current);
 
+void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold);
+
 #endif

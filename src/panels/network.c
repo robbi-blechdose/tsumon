@@ -211,5 +211,5 @@ void moveNetworkPanelSettingsCursor(Panel* panel, bool up)
         strcpy(net->interfaceName, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
-    readNetworkUsage(panel);
+    readNetworkUsage(net);
 }

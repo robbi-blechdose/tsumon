@@ -24,6 +24,9 @@ uint8_t getOS(char* os)
         return 2;
     }
 
+    //Terminate string before "\n \l"
+    os[strcspn(os, "\\")] = 0;
+
     fclose(issue);
     return 0;
 }

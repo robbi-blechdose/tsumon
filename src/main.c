@@ -28,12 +28,15 @@
 #include "display.h"
 #include "panel.h"
 #include "setup.h"
+#include "config.h"
 
 int32_t screenX, screenY;
 //Windows
 WINDOW* infoWin;
 WINDOW* setupWin;
 WINDOW* setupEditWin;
+
+Configuration config;
 
 bool setupOpen = false;
 
@@ -52,6 +55,17 @@ void drawInfoWin(void)
 
 void repositionWindows(void)
 {
+    getmaxyx(stdscr, screenY, screenX);
+    
+    //Check for width limit
+    if(config.general.widthLimit)
+    {
+        if(screenX > config.general.widthLimit * PANEL_WIDTH)
+        {
+            screenX = config.general.widthLimit * PANEL_WIDTH;
+        }
+    }
+    
     //Clear all windows to prevent garbage appearing
     wclear(stdscr);
     for(uint8_t i = 0; i < numPanels; i++)
@@ -100,6 +114,32 @@ void repositionWindows(void)
     wresize(setupEditWin, SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH);
 }
 
+uint8_t initPanels()
+{
+    numPanels = config.panels.numPanels;
+    panels = malloc(sizeof(Panel) * numPanels);
+    for(uint8_t i = 0; i < numPanels; i++)
+    {
+        panels[i].type = config.panels.panelTypes[i];
+        if(initPanel(&panels[i]))
+        {
+            endwin();
+            printf("Failed to initalize panel %d.\n", i);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void quitPanels()
+{
+    for(uint8_t i = 0; i < numPanels; i++)
+    {
+        quitPanel(&panels[i]);
+    }
+    free(panels);
+}
+
 int main(int argc, char* argv[])
 {
     ncursesSetup();
@@ -108,21 +148,20 @@ int main(int argc, char* argv[])
     timeout(0);
     ESCDELAY = 100;
 
-    if(loadConfig())
+    //Load configs, possibly set initial configs when loading was unsuccessful
+    if(loadConfig(&config.general))
     {
-        //Couldn't load config, use initial one instead
-        setInitialConfig();
+        setInitialConfig(&config.general);
+    }
+    if(loadPanelConfig(&config.panels))
+    {
+        setInitialPanelConfig(&config.panels);
     }
 
     //Set up panels
-    for(uint8_t i = 0; i < numPanels; i++)
+    if(initPanels())
     {
-        if(initPanel(&panels[i]))
-        {
-            endwin();
-            printf("Failed to initalize panel %d.\n", i);
-            return 1;
-        }
+        return 1;
     }
 
     //Set up display windows
@@ -131,8 +170,9 @@ int main(int argc, char* argv[])
     setupWin = newwin(SETUP_WIN_HEIGHT, SETUP_WIN_WIDTH, 1, 0);
     setupEditWin = newwin(SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH,
                             SETUP_WIN_HEIGHT / 2 - SETUP_EDIT_WIN_HEIGHT / 2, SETUP_WIN_WIDTH / 2 - SETUP_EDIT_WIN_WIDTH / 2);
-    getmaxyx(stdscr, screenY, screenX);
     repositionWindows();
+
+    initSetup(setupWin);
 
     while(true)
     {
@@ -148,21 +188,25 @@ int main(int argc, char* argv[])
 
         if(setupOpen)
         {
-            drawSetup(setupWin, setupEditWin);
+            drawSetup(&config);
         }
         else
         {
             for(uint8_t i = 0; i < numPanels; i++)
             {
-                updatePanel(&panels[i], getRefreshInterval());
+                updatePanel(&panels[i], refreshIntervals[config.general.refreshIntervalIndex]);
             }
         }
 
         drawInfoWin();
 
-        if(!setupOpen)
+        if(setupOpen)
         {
-            usleep(getRefreshInterval() * 1000);
+            usleep(16 * 1000); //16ms ~ 60fps, this is done so we don't burn CPU cycles needlessly
+        }
+        else
+        {
+            usleep(refreshIntervals[config.general.refreshIntervalIndex] * 1000);
         }
 
         int32_t c = getch();
@@ -176,7 +220,11 @@ int main(int argc, char* argv[])
             {
                 setupOpen = false;
                 //We closed the setup screen
-                saveConfig();
+                saveConfig(&config.general);
+                savePanelConfig(&config.panels);
+                //Reinit panels in case we changed anything
+                quitPanels();
+                initPanels();
                 repositionWindows();
             }
             else if(!setupOpen)
@@ -187,15 +235,15 @@ int main(int argc, char* argv[])
         }
         else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
         {
-            moveSetupCursorLR(c == KEY_LEFT);
+            moveSetupCursorLR(c == KEY_LEFT, &config);
         }
         else if((c == KEY_UP || c == KEY_DOWN) && setupOpen)
         {
-            moveSetupCursorUD(c == KEY_UP);
+            moveSetupCursorUD(c == KEY_UP, &config);
         }
         else if((c == KEY_ENTER || c == '\n') && setupOpen)
         {
-            enterSetupCursor();
+            enterSetupCursor(&config);
         }
         else if(c == 27 && setupOpen) //Escape key
         {
@@ -203,16 +251,11 @@ int main(int argc, char* argv[])
         }
         else if(c == KEY_RESIZE)
         {
-            getmaxyx(stdscr, screenY, screenX);
             repositionWindows();
         }
     }
 
-    for(uint8_t i = 0; i < numPanels; i++)
-    {
-        quitPanel(&panels[i]);
-    }
-    free(panels);
+    quitPanels();
     endwin();
 
     return 0;

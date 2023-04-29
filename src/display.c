@@ -87,3 +87,17 @@ void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t curre
     }
     mvwaddch(win, y, x + 1 + length, '>');
 }
+
+void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold)
+{
+    if(bold)
+    {
+        wattrset(win, A_BOLD);
+        mvwaddstr(win, y, x, str);
+        wattrset(win, 0);
+    }
+    else
+    {
+        mvwaddstr(win, y, x, str);
+    }
+}
