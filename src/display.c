@@ -1,9 +1,11 @@
 #include "display.h"
 
 #include <string.h>
+#include <locale.h>
 
 void ncursesSetup(void)
 {
+    setlocale(LC_ALL, "");
     initscr();
     noecho();
     curs_set(0);
@@ -16,12 +18,8 @@ void ncursesSetup(void)
     init_pair(C_BC, COLOR_BLACK, COLOR_CYAN);
 }
 
-void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
+void setColorViaThreshold(WINDOW* win, float value)
 {
-    mvwaddch(win, y, x, '[');
-    mvwaddch(win, y, x + 21, ']');
-
-    //Set color
     if(value < THRESHOLD_GREEN)
     {
         wcolor_set(win, C_GB, 0);
@@ -34,6 +32,14 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
     {
         wcolor_set(win, C_RB, 0);
     }
+}
+
+void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
+{
+    mvwaddch(win, y, x, '[');
+    mvwaddch(win, y, x + 21, ']');
+
+    setColorViaThreshold(win, value);
 
     //Draw bar
     for(uint8_t i = 0; i < 20; i++)
@@ -100,4 +106,47 @@ void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool
     {
         mvwaddstr(win, y, x, str);
     }
+}
+
+void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values)
+{
+    for(uint8_t i = 0; i < width; i++)
+    {
+        setColorViaThreshold(win, values[i]);
+
+        //Translate percentages into values fitting the graph height
+        uint8_t value = values[i] * 0.02f * height;
+
+        //Draw bar
+        for(uint8_t j = 0; j < height; j++)
+        {
+            uint8_t valueRounded = (value + 1) / 2;
+            if(j < valueRounded)
+            {
+                if(j == valueRounded - 1 && value % 2 != 0)
+                {
+                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2584");
+                }
+                else
+                {
+                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2588");
+                }
+            }
+            else
+            {
+                mvwaddch(win, y + height - 1 - j, i + x, ' ');
+            }
+        }
+    }
+
+    //Reset color
+    wcolor_set(win, C_WB, 0);
+}
+
+void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max)
+{
+    mvwaddstr(win, y, x, max);
+    mvwaddstr(win, y + height - 1, x, min);
+    wmove(win, y, x + strlen(max));
+    wvline(win, ACS_VLINE, height);
 }
