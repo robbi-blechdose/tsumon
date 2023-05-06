@@ -8,6 +8,5 @@ uint8_t initGPU(void);
 void quitGPU(void);
 
 uint8_t initGPUPanel(Panel* panel);
-void updateGPUPanel(Panel* panel);
 
 #endif

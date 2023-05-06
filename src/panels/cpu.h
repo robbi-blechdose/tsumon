@@ -6,6 +6,5 @@
 #include "../panel.h"
 
 void initCPUPanel(Panel* panel);
-void updateCPUPanel(Panel* panel);
 
 #endif

@@ -27,6 +27,4 @@ void cancelSetupCursor();
 
 bool canExitSetup();
 
-PanelType* getPanelTypes();
-
 #endif

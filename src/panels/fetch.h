@@ -5,8 +5,6 @@
 
 #include "../panel.h"
 
-uint8_t readUptime(Panel* panel);
 uint8_t initFetchPanel(Panel* panel);
-void drawFetchPanelContents(Panel* panel);
 
 #endif

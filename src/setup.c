@@ -7,7 +7,6 @@
 
 #include "setup/menu.h"
 #include "setup/general_setup.h"
-#include "setup/panel_setup.h"
 
 
 //TODO: switch to derwin() subwindows
@@ -66,48 +65,12 @@ void initSetup(WINDOW* win)
     initWidthLimitMenu(widthLimit);
     widthLimit->win = win; //TODO: sub window
     insertMenuTree(&menuTree, widthLimit);
-
-    //Panel setup
-    //Panel main menu
-    MenuTree* panelMain = malloc(sizeof(MenuTree));
-    createMenuTree(panelMain);
-    initPanelMainMenu(panelMain);
-    panelMain->win = win;
-    insertMenuTree(&menuTree, panelMain);
-
-    //Panel action menu
-    MenuTree* panelAction = malloc(sizeof(MenuTree));
-    createMenuTree(panelAction);
-    initPanelActionMenu(panelAction);
-    panelAction->win = win;
-    insertMenuTree(panelMain, panelAction);
-
-    //Panel add menu
-    MenuTree* panelAdd = malloc(sizeof(MenuTree));
-    createMenuTree(panelAdd);
-    initPanelAddMenu(panelAdd);
-    panelAdd->win = win;
-    insertMenuTree(panelAction, panelAdd);
 }
 
 void drawSetup(Configuration* config)
 {
     drawMenuTree(&menuTree, config);
     wrefresh(menuTree.win);
-
-
-
-
-    /**
-    if(panelEditOpen)
-    {
-        drawTitledWindow(editWin, "Settings", SETUP_EDIT_WIN_WIDTH);
-        drawPanelSettings(editWin, &panels[panelCursor]);
-    }
-    else
-    {
-        wrefresh(win);
-    }**/
 }
 
 void moveCursor(int8_t* cursor, bool dec, int8_t max)
@@ -184,20 +147,6 @@ bool moveSetupCursorUDTree(bool up, Configuration* config, MenuTree* mt)
 void moveSetupCursorUD(bool up, Configuration* config)
 {
     moveSetupCursorUDTree(up, config, &menuTree);
-
-    /**
-    if(!(mainCursor == CURSOR_PANELS && panelSelected))
-    {
-
-    }
-    else if(panelSelected)
-    {
-        if(panelEditOpen)
-        {
-            //This can currently only happen for a network panel, so no need to check the type
-            moveNetworkPanelSettingsCursor(&panels[panelCursor], up);
-        }
-    }**/
 }
 
 bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
@@ -226,32 +175,6 @@ bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
 void enterSetupCursor(Configuration* config)
 {
     enterSetupCursorTree(config, &menuTree);
-    
-    /**
-    if(mainCursor != CURSOR_PANELS)
-    {
-        return;
-    }
-
-    if(!panelSelected)
-    {
-        panelSelected = true;
-    }
-    else
-    {
-        panelSelected = false;
-
-        else if(panelActionCursor == PAC_EDIT)
-        {
-            panelSelected = true;
-            //Only network currently has settings
-            if(panels[panelCursor].type != P_NETWORK)
-            {
-                return;
-            }
-            panelEditOpen = true;
-        }
-    }**/
 }
 
 bool cancelSetupCursorTree(Configuration* config, MenuTree* mt)

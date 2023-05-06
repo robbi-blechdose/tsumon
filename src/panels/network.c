@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../display.h"
 
 #define B_TO_MB(X) ((X) / 1048576.0f)
 
@@ -16,10 +17,17 @@ typedef struct {
     uint64_t up;
 } NetStatus;
 
+static NetStatus net;
+#define HISTORY_SIZE 10
+static uint64_t downHistory[HISTORY_SIZE];
+static uint64_t upHistory[HISTORY_SIZE];
+static uint8_t downHistoryScaled[HISTORY_SIZE];
+static uint8_t upHistoryScaled[HISTORY_SIZE];
+
 /**
  * Assumes a 1-second window
  **/
-uint8_t readNetworkUsage(NetStatus* net)
+uint8_t readNetworkUsage()
 {
     uint64_t totalDown;
     uint64_t totalUp;
@@ -32,7 +40,7 @@ uint8_t readNetworkUsage(NetStatus* net)
 
     char* line = NULL;
     size_t n;
-    for(uint8_t i = 0; i < net->interfaceIndex + 1; i++)
+    for(uint8_t i = 0; i < net.interfaceIndex + 1; i++)
     {
         if(getline(&line, &n, netdev) <= 0)
         {
@@ -56,14 +64,14 @@ uint8_t readNetworkUsage(NetStatus* net)
     }
 
     //Calculate difference
-    net->down = totalDown - net->totalDownLast;
-    net->up = totalUp - net->totalUpLast;
+    net.down = totalDown - net.totalDownLast;
+    net.up = totalUp - net.totalUpLast;
 
     fclose(netdev);
 
     //Swap values
-    net->totalDownLast = totalDown;
-    net->totalUpLast = totalUp;
+    net.totalDownLast = totalDown;
+    net.totalUpLast = totalUp;
 
     return 0;
 }
@@ -130,86 +138,130 @@ uint8_t getNumInterfaces(uint8_t* numInterfaces)
     return 0;
 }
 
-void initNetworkPanel(Panel* panel)
+void scaleHistory(uint64_t* history, uint8_t* scaledHistory)
 {
-    panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
-    panel->data = malloc(sizeof(NetStatus));
-    NetStatus* net = (NetStatus*) panel->data;
+    uint64_t max = 0;
+    for(uint8_t i = 0; i < HISTORY_SIZE; i++)
+    {
+        if(history[i] > max)
+        {
+            max = history[i];
+        }
+    }
 
-    if(getNumInterfaces(&net->numInterfaces))
+    for(uint8_t i = 0; i < HISTORY_SIZE; i++)
     {
-        strcpy(net->interfaceName, "NO INTERFACES");
+        scaledHistory[i] = history[i] * 100.0f / max;
     }
-    net->interfaceIndex = 1; //Default to first interface after LO
-    if(getInterfaceName(net->interfaceName, net->interfaceIndex))
-    {
-        strcpy(net->interfaceName, "CANNOT DETECT");
-    }
-    //Do one read to make sure the first actual read has a valid previous value
-    readNetworkUsage(net);
 }
 
-void drawNetworkPanelContents(Panel* panel)
+void updateNetworkValues(Panel* panel, uint16_t refreshInterval)
 {
+    readNetworkUsage();
+    net.down *= 1.0f / (refreshInterval / 1000.0f);
+    net.up *= 1.0f / (refreshInterval / 1000.0f);
+
+    //Shift previous entries back
+    for(uint8_t i = 0; i < HISTORY_SIZE - 1; i++)
+    {
+        downHistory[i] = downHistory[i + 1];
+    }
+    //Read new entry
+    downHistory[HISTORY_SIZE - 1] = net.down;
+    //Shift previous entries back
+    for(uint8_t i = 0; i < HISTORY_SIZE - 1; i++)
+    {
+        upHistory[i] = upHistory[i + 1];
+    }
+    //Read new entry
+    upHistory[HISTORY_SIZE - 1] = net.up;
+
+    //addEntryToHistory(&downHistory, HISTORY_SIZE, net.down);
+    //addEntryToHistory(&upHistory, HISTORY_SIZE, net.up);
+    //Calculate scaled histories
+    scaleHistory(downHistory, downHistoryScaled);
+    scaleHistory(upHistory, upHistoryScaled);
+}
+
+void drawNetworkPanel(Panel* panel)
+{
+    drawTitledWindow(panel->window, "Network", PANEL_WIDTH);
     char buffer[PANEL_WIDTH];
-    NetStatus* net = (NetStatus*) panel->data;
 
     wattrset(panel->window, A_BOLD);
-    mvwaddstr(panel->window, 1, 1, net->interfaceName);
+    mvwaddstr(panel->window, 1, 1, net.interfaceName);
     wattrset(panel->window, 0);
-    sprintf(buffer, "Down: %6.2f MiB/s", B_TO_MB(net->down));
+    sprintf(buffer, "Down: %6.2f MiB/s", B_TO_MB(net.down));
     mvwaddstr(panel->window, 2, 1, buffer);
-    sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net->up));
+    sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net.up));
     mvwaddstr(panel->window, 3, 1, buffer);
+
+    drawGraphLabels(panel->window, 4, 1, 4, "  0%", "100%");
+    drawGraph(panel->window, 4, 6, 4, HISTORY_SIZE, downHistoryScaled);
+
+    drawGraphLabels(panel->window, 4, 18, 4, "  0%", "100%");
+    drawGraph(panel->window, 4, 23, 4, HISTORY_SIZE, upHistoryScaled);
 }
 
-void updateNetworkPanel(Panel* panel, uint16_t refreshInterval)
+#define NETWORK_PANEL_HEIGHT 9
+
+void initNetworkPanel(Panel* panel)
 {
-    NetStatus* net = (NetStatus*) panel->data;
-    readNetworkUsage(net);
-    net->down *= 1.0f / (refreshInterval / 1000.0f);
-    net->up *= 1.0f / (refreshInterval / 1000.0f);
-    drawNetworkPanelContents(panel);
+    panel->window = newwin(NETWORK_PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
+    panel->height = NETWORK_PANEL_HEIGHT;
+
+    panel->update = &updateNetworkValues;
+    panel->draw = &drawNetworkPanel;
+
+    if(getNumInterfaces(&net.numInterfaces))
+    {
+        strcpy(net.interfaceName, "NO INTERFACES");
+    }
+    net.interfaceIndex = 1; //Default to first interface after LO
+    if(getInterfaceName(net.interfaceName, net.interfaceIndex))
+    {
+        strcpy(net.interfaceName, "CANNOT DETECT");
+    }
+    //Do one read to make sure the first actual read has a valid previous value
+    readNetworkUsage();
 }
 
+/**
 void drawNetworkPanelSettings(WINDOW* win, Panel* panel)
 {
-    NetStatus* net = (NetStatus*) panel->data;
-
     char buffer[16];
-    sprintf(buffer, "Interface: %d", net->interfaceIndex);
+    sprintf(buffer, "Interface: %d", net.interfaceIndex);
     mvwaddstr(win, 1, 1, buffer);
 }
 
 void moveNetworkPanelSettingsCursor(Panel* panel, bool up)
 {
-    NetStatus* net = (NetStatus*) panel->data;
-
     if(up)
     {
-        net->interfaceIndex++;
-        if(net->interfaceIndex >= net->numInterfaces)
+        net.interfaceIndex++;
+        if(net.interfaceIndex >= net.numInterfaces)
         {
-            net->interfaceIndex = 0;
+            net.interfaceIndex = 0;
         }
     }
     else
     {
-        if(net->interfaceIndex == 0)
+        if(net.interfaceIndex == 0)
         {
-            net->interfaceIndex = net->numInterfaces - 1;
+            net.interfaceIndex = net.numInterfaces - 1;
         }
         else
         {
-            net->interfaceIndex--;
+            net.interfaceIndex--;
         }
     }
     
     //Reload name and usage
-    if(getInterfaceName(net->interfaceName, net->interfaceIndex))
+    if(getInterfaceName(net.interfaceName, net.interfaceIndex))
     {
-        strcpy(net->interfaceName, "CANNOT DETECT");
+        strcpy(net.interfaceName, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
     readNetworkUsage(net);
 }
+**/

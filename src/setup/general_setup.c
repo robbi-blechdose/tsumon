@@ -16,14 +16,14 @@ void drawRefreshInterval(MenuTree* menu, Configuration* config)
     {
         mvwaddstr(menu->win, 1, 3, "Refresh interval:");
     }
-    drawSlider(menu->win, 1, 21, NUM_REFRESH_INTERVALS, config->general.refreshIntervalIndex);
-    sprintf(buffer, "%3.1fs", refreshIntervals[config->general.refreshIntervalIndex] / 1000.0f);
+    drawSlider(menu->win, 1, 21, NUM_REFRESH_INTERVALS, config->refreshIntervalIndex);
+    sprintf(buffer, "%3.1fs", refreshIntervals[config->refreshIntervalIndex] / 1000.0f);
     mvwaddstr(menu->win, 1, 29, buffer);
 }
 
 void moveRefreshIntervalCursorLR(bool left, MenuTree*, Configuration* config)
 {
-    moveCursor(&config->general.refreshIntervalIndex, left, NUM_REFRESH_INTERVALS - 1);
+    moveCursor(&config->refreshIntervalIndex, left, NUM_REFRESH_INTERVALS - 1);
 }
 
 void initRefreshIntervalMenu(MenuTree* menu)
@@ -45,9 +45,9 @@ void drawWidthLimit(MenuTree* menu, Configuration* config)
     {
         mvwaddstr(menu->win, 3, 3, "Width Limit:");
     }
-    if(config->general.widthLimit)
+    if(config->widthLimit)
     {
-        sprintf(buffer, "%d  ", config->general.widthLimit);
+        sprintf(buffer, "%d  ", config->widthLimit);
         mvwaddstr(menu->win, 3, 16, buffer);
     }
     else
@@ -58,7 +58,7 @@ void drawWidthLimit(MenuTree* menu, Configuration* config)
 
 void moveWidthLimitCursorLR(bool left, MenuTree*, Configuration* config)
 {
-    moveCursor(&config->general.widthLimit, left, 8); //TODO: replace limit number with a more sensible constant
+    moveCursor(&config->widthLimit, left, 8); //TODO: replace limit number with a more sensible constant
 }
 
 void initWidthLimitMenu(MenuTree* menu)

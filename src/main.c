@@ -30,6 +30,12 @@
 #include "setup.h"
 #include "config.h"
 
+#include "panels/cpu.h"
+#include "panels/ram.h"
+#include "panels/gpu.h"
+#include "panels/network.h"
+#include "panels/fetch.h"
+
 int32_t screenX, screenY;
 //Windows
 WINDOW* infoWin;
@@ -39,6 +45,9 @@ WINDOW* setupEditWin;
 Configuration config;
 
 bool setupOpen = false;
+
+#define NUM_PANELS 5
+Panel panels[NUM_PANELS];
 
 void drawInfoWin(void)
 {
@@ -58,17 +67,17 @@ void repositionWindows(void)
     getmaxyx(stdscr, screenY, screenX);
     
     //Check for width limit
-    if(config.general.widthLimit)
+    if(config.widthLimit)
     {
-        if(screenX > config.general.widthLimit * PANEL_WIDTH)
+        if(screenX > config.widthLimit * PANEL_WIDTH)
         {
-            screenX = config.general.widthLimit * PANEL_WIDTH;
+            screenX = config.widthLimit * PANEL_WIDTH;
         }
     }
     
     //Clear all windows to prevent garbage appearing
     wclear(stdscr);
-    for(uint8_t i = 0; i < numPanels; i++)
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
         wclear(panels[i].window);
     }
@@ -87,16 +96,23 @@ void repositionWindows(void)
         {
             screenX = PANEL_WIDTH;
         }
+
         uint8_t y = 1;
+        uint8_t maxHeight = 0;
         uint8_t x = 0;
-        for(uint8_t i = 0; i < numPanels; i++)
+        for(uint8_t i = 0; i < NUM_PANELS; i++)
         {
             mvwin(panels[i].window, y, x);
             x += PANEL_WIDTH;
-            if(x + PANEL_WIDTH > screenX || i == numPanels - 1)
+            if(panels[i].height > maxHeight)
+            {
+                maxHeight = panels[i].height;
+            }
+            if(x + PANEL_WIDTH > screenX || i == NUM_PANELS - 1)
             {
                 x = 0;
-                y += PANEL_HEIGHT;
+                y += maxHeight;
+                maxHeight = 0;
             }
         }
 
@@ -104,9 +120,9 @@ void repositionWindows(void)
     }
 
     //Resize windows to prevent breaking when terminal is resized below window size
-    for(uint8_t i = 0; i < numPanels; i++)
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
-        wresize(panels[i].window, PANEL_HEIGHT, PANEL_WIDTH);
+        wresize(panels[i].window, panels[i].height, PANEL_WIDTH);
     }
 
     wresize(infoWin, 1, PANEL_WIDTH);
@@ -116,28 +132,28 @@ void repositionWindows(void)
 
 uint8_t initPanels()
 {
-    numPanels = config.panels.numPanels;
-    panels = malloc(sizeof(Panel) * numPanels);
-    for(uint8_t i = 0; i < numPanels; i++)
+    initCPUPanel(&panels[0]);
+    initRAMPanel(&panels[1]);
+    initGPUPanel(&panels[2]);
+    initNetworkPanel(&panels[3]);
+    initFetchPanel(&panels[4]);
+
+    /**
+    if(initPanel(&panels[i]))
     {
-        panels[i].type = config.panels.panelTypes[i];
-        if(initPanel(&panels[i]))
-        {
-            endwin();
-            printf("Failed to initalize panel %d.\n", i);
-            return 1;
-        }
-    }
+        endwin();
+        printf("Failed to initalize panel %d.\n", i);
+        return 1;
+    }**/
     return 0;
 }
 
 void quitPanels()
 {
-    for(uint8_t i = 0; i < numPanels; i++)
+    for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
         quitPanel(&panels[i]);
     }
-    free(panels);
 }
 
 int main(int argc, char* argv[])
@@ -149,13 +165,9 @@ int main(int argc, char* argv[])
     ESCDELAY = 100;
 
     //Load configs, possibly set initial configs when loading was unsuccessful
-    if(loadConfig(&config.general))
+    if(loadConfig(&config))
     {
-        setInitialConfig(&config.general);
-    }
-    if(loadPanelConfig(&config.panels))
-    {
-        setInitialPanelConfig(&config.panels);
+        setInitialConfig(&config);
     }
 
     //Set up panels
@@ -179,9 +191,9 @@ int main(int argc, char* argv[])
         //Draw main window
         wattrset(stdscr, A_BOLD);
         uint8_t titleX = (screenX / PANEL_WIDTH) * PANEL_WIDTH / 2 - 2;
-        if(titleX > numPanels * PANEL_WIDTH / 2 - 2)
+        if(titleX > NUM_PANELS * PANEL_WIDTH / 2 - 2)
         {
-            titleX = numPanels * PANEL_WIDTH / 2 - 2;
+            titleX = NUM_PANELS * PANEL_WIDTH / 2 - 2;
         }
         mvaddstr(0, titleX, "tsumon");
         refresh();
@@ -192,9 +204,15 @@ int main(int argc, char* argv[])
         }
         else
         {
-            for(uint8_t i = 0; i < numPanels; i++)
+            for(uint8_t i = 0; i < NUM_PANELS; i++)
             {
-                updatePanel(&panels[i], refreshIntervals[config.general.refreshIntervalIndex]);
+                if(panels[i].update != NULL)
+                {
+                    panels[i].update(&panels[i], refreshIntervals[config.refreshIntervalIndex]);
+                    //TODO: move outside null check
+                    panels[i].draw(&panels[i]);
+                }
+                wrefresh(panels[i].window);
             }
         }
 
@@ -206,7 +224,7 @@ int main(int argc, char* argv[])
         }
         else
         {
-            usleep(refreshIntervals[config.general.refreshIntervalIndex] * 1000);
+            usleep(refreshIntervals[config.refreshIntervalIndex] * 1000);
         }
 
         int32_t c = getch();
@@ -220,8 +238,7 @@ int main(int argc, char* argv[])
             {
                 setupOpen = false;
                 //We closed the setup screen
-                saveConfig(&config.general);
-                savePanelConfig(&config.panels);
+                saveConfig(&config);
                 //Reinit panels in case we changed anything
                 quitPanels();
                 initPanels();

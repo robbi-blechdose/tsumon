@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "../display.h"
 
 typedef struct {
     char os[PANEL_WIDTH - 5];
@@ -9,6 +10,8 @@ typedef struct {
     char hostname[PANEL_WIDTH - 11];
     double uptime;
 } FetchData;
+
+static FetchData fetchData;
 
 uint8_t getOS(char* os)
 {
@@ -67,7 +70,7 @@ uint8_t getHostname(char* hostname)
     return 0;
 }
 
-uint8_t readUptime(Panel* panel)
+uint8_t readUptime()
 {
     FILE* uptime = fopen("/proc/uptime", "r");
     if(uptime == NULL)
@@ -75,7 +78,7 @@ uint8_t readUptime(Panel* panel)
         return 1;
     }
 
-    if(fscanf(uptime, "%lf", &((FetchData*) panel->data)->uptime) != 1)
+    if(fscanf(uptime, "%lf", &fetchData.uptime) != 1)
     {
         fclose(uptime);
         return 2;
@@ -85,28 +88,15 @@ uint8_t readUptime(Panel* panel)
     return 0;
 }
 
-uint8_t initFetchPanel(Panel* panel)
+void updateFetchValues(Panel* panel, uint16_t refreshInterval)
 {
-    panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
-    panel->data = malloc(sizeof(FetchData));
-
-    //Read data - this doesn't change so doing it on startup is enough
-    FetchData* data = (FetchData*) panel->data;
-    uint8_t err = getOS(data->os);
-    if(err)
-    {
-        return err;
-    }
-    err = getHostname(data->hostname);
-    if(err)
-    {
-        return err;
-    }
-    return getKernel(data->kernel);
+    readUptime();
 }
 
-void drawFetchPanelContents(Panel* panel)
+void drawFetchPanel(Panel* panel)
 {
+    drawTitledWindow(panel->window, "System", PANEL_WIDTH);
+
     //Draw titles
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, "OS:");
@@ -115,14 +105,35 @@ void drawFetchPanelContents(Panel* panel)
     mvwaddstr(panel->window, 4, 1, "Uptime:");
     //Draw contents
     wattrset(panel->window, 0);
-    FetchData* data = (FetchData*) panel->data;
-    mvwaddstr(panel->window, 1, 5, data->os);
-    mvwaddstr(panel->window, 2, 9, data->kernel);
-    mvwaddstr(panel->window, 3, 11, data->hostname);
+    mvwaddstr(panel->window, 1, 5, fetchData.os);
+    mvwaddstr(panel->window, 2, 9, fetchData.kernel);
+    mvwaddstr(panel->window, 3, 11, fetchData.hostname);
 
     char buffer[PANEL_WIDTH - 9];
-    uint32_t hours = data->uptime / 3600;
-    float mins = data->uptime / 60 - (hours * 60);
+    uint32_t hours = fetchData.uptime / 3600;
+    float mins = fetchData.uptime / 60 - (hours * 60);
     sprintf(buffer, "%2.0f:%2.0f", (float) hours, mins);
     mvwaddstr(panel->window, 4, 9, buffer);
+}
+
+uint8_t initFetchPanel(Panel* panel)
+{
+    panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
+    panel->height = PANEL_HEIGHT;
+
+    panel->update = &updateFetchValues;
+    panel->draw = &drawFetchPanel;
+
+    //Read data - this doesn't change so doing it on startup is enough
+    uint8_t err = getOS(fetchData.os);
+    if(err)
+    {
+        return err;
+    }
+    err = getHostname(fetchData.hostname);
+    if(err)
+    {
+        return err;
+    }
+    return getKernel(fetchData.kernel);
 }
