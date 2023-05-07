@@ -115,21 +115,30 @@ void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width,
         setColorViaThreshold(win, values[i]);
 
         //Translate percentages into values fitting the graph height
-        uint8_t value = values[i] * 0.02f * height;
+        uint8_t value = values[i] * 0.1f * height;
 
         //Draw bar
         for(uint8_t j = 0; j < height; j++)
         {
-            uint8_t valueRounded = (value + 1) / 2;
-            if(j < valueRounded)
+            if(value / 10 > j)
             {
-                if(j == valueRounded - 1 && value % 2 != 0)
+                mvwaddstr(win, y + height - 1 - j, i + x, "\u2588");
+            }
+            else if(value > j * 10)
+            {
+                uint8_t diff = value - (value / 10) * 10;
+
+                if(diff < 3)
+                {
+                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2582");
+                }
+                else if(diff < 7)
                 {
                     mvwaddstr(win, y + height - 1 - j, i + x, "\u2584");
                 }
                 else
                 {
-                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2588");
+                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2586");
                 }
             }
             else
