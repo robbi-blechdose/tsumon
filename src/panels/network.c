@@ -5,7 +5,31 @@
 #include <string.h>
 #include "../display.h"
 
+#define NETWORK_PANEL_HEIGHT 9
+#define NETWORK_PANEL_WIDTH 39
+
 #define B_TO_MB(X) ((X) / 1048576.0f)
+
+static const uint64_t scales[] = {
+    1024, //1KiB
+    64 * 1024, //64KiB
+    512 * 1024, //512KiB
+    1024 * 1024, //1MiB
+    16 * 1024 * 1024, //16MiB
+    64 * 1024 * 1024, //64MiB
+    512 * 1024 * 1024, //512MiB
+    1024 * 1024 * 1024 //1GiB
+};
+
+static const char* scaleNames[] = {
+    "  1K",
+    " 64K",
+    "512K",
+    "  1M",
+    " 16M",
+    "512M",
+    "  1G"
+};
 
 typedef struct {
     uint8_t numInterfaces;
@@ -18,11 +42,13 @@ typedef struct {
 } NetStatus;
 
 static NetStatus net;
-#define HISTORY_SIZE 10
+#define HISTORY_SIZE 13
 static uint64_t downHistory[HISTORY_SIZE];
 static uint64_t upHistory[HISTORY_SIZE];
 static uint8_t downHistoryScaled[HISTORY_SIZE];
 static uint8_t upHistoryScaled[HISTORY_SIZE];
+static uint8_t downHistoryScale;
+static uint8_t upHistoryScale;
 
 /**
  * Assumes a 1-second window
@@ -138,20 +164,22 @@ uint8_t getNumInterfaces(uint8_t* numInterfaces)
     return 0;
 }
 
-void scaleHistory(uint64_t* history, uint8_t* scaledHistory)
+void scaleHistory(uint64_t* history, uint8_t* scaledHistory, uint8_t* scale)
 {
-    uint64_t max = 0;
+    //Select scale
+    *scale = 0;
     for(uint8_t i = 0; i < HISTORY_SIZE; i++)
     {
-        if(history[i] > max)
+        while(history[i] > scales[*scale])
         {
-            max = history[i];
+            (*scale)++;
         }
     }
 
+    //Scale history
     for(uint8_t i = 0; i < HISTORY_SIZE; i++)
     {
-        scaledHistory[i] = history[i] * 100.0f / max;
+        scaledHistory[i] = history[i] * 100.0f / scales[*scale];
     }
 }
 
@@ -178,37 +206,35 @@ void updateNetworkValues(Panel* panel, uint16_t refreshInterval)
 
     //addEntryToHistory(&downHistory, HISTORY_SIZE, net.down);
     //addEntryToHistory(&upHistory, HISTORY_SIZE, net.up);
+
     //Calculate scaled histories
-    scaleHistory(downHistory, downHistoryScaled);
-    scaleHistory(upHistory, upHistoryScaled);
+    scaleHistory(downHistory, downHistoryScaled, &downHistoryScale);
+    scaleHistory(upHistory, upHistoryScaled, &upHistoryScale);
 }
 
 void drawNetworkPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "Network", PANEL_WIDTH);
-    char buffer[PANEL_WIDTH];
+    drawTitledWindow(panel->window, "Network", NETWORK_PANEL_WIDTH);
+    char buffer[NETWORK_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, net.interfaceName);
     wattrset(panel->window, 0);
-    sprintf(buffer, "Down: %6.2f MiB/s", B_TO_MB(net.down));
+    sprintf(buffer, "Down: %6.2f MiB/s Up:   %6.2f MiB/s", B_TO_MB(net.down), B_TO_MB(net.up));
     mvwaddstr(panel->window, 2, 1, buffer);
-    sprintf(buffer, "Up:   %6.2f MiB/s", B_TO_MB(net.up));
-    mvwaddstr(panel->window, 3, 1, buffer);
 
-    drawGraphLabels(panel->window, 4, 1, 4, "  0%", "100%");
+    drawGraphLabels(panel->window, 4, 1, 4, "   0", scaleNames[downHistoryScale]);
     drawGraph(panel->window, 4, 6, 4, HISTORY_SIZE, downHistoryScaled);
 
-    drawGraphLabels(panel->window, 4, 18, 4, "  0%", "100%");
-    drawGraph(panel->window, 4, 23, 4, HISTORY_SIZE, upHistoryScaled);
+    drawGraphLabels(panel->window, 4, 20, 4, "   0", scaleNames[upHistoryScale]);
+    drawGraph(panel->window, 4, 25, 4, HISTORY_SIZE, upHistoryScaled);
 }
-
-#define NETWORK_PANEL_HEIGHT 9
 
 void initNetworkPanel(Panel* panel)
 {
-    panel->window = newwin(NETWORK_PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->height = NETWORK_PANEL_HEIGHT;
+    panel->width = NETWORK_PANEL_WIDTH;
+    panel->window = newwin(NETWORK_PANEL_HEIGHT, NETWORK_PANEL_WIDTH, 0, 0);
 
     panel->update = &updateNetworkValues;
     panel->draw = &drawNetworkPanel;

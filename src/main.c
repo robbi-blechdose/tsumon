@@ -103,12 +103,12 @@ void repositionWindows(void)
         for(uint8_t i = 0; i < NUM_PANELS; i++)
         {
             mvwin(panels[i].window, y, x);
-            x += PANEL_WIDTH;
+            x += panels[i].width;
             if(panels[i].height > maxHeight)
             {
                 maxHeight = panels[i].height;
             }
-            if(x + PANEL_WIDTH > screenX || i == NUM_PANELS - 1)
+            if(i == NUM_PANELS - 1 || x + panels[i + 1].width > screenX)
             {
                 x = 0;
                 y += maxHeight;
@@ -122,7 +122,7 @@ void repositionWindows(void)
     //Resize windows to prevent breaking when terminal is resized below window size
     for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
-        wresize(panels[i].window, panels[i].height, PANEL_WIDTH);
+        wresize(panels[i].window, panels[i].height, panels[i].width);
     }
 
     wresize(infoWin, 1, PANEL_WIDTH);

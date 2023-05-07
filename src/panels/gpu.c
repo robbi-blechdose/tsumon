@@ -5,10 +5,13 @@
 #include <stdlib.h>
 #include "../display.h"
 
+#define GPU_PANEL_HEIGHT 10
+#define GPU_PANEL_WIDTH 70
+
 static nvmlDevice_t device;
 
 typedef struct {
-    char name[PANEL_WIDTH - 1];
+    char name[GPU_PANEL_WIDTH - 1];
     float usagePercent;
     float memPercent;
     float temperature;
@@ -17,6 +20,7 @@ typedef struct {
 static GPUStatus gpu;
 #define HISTORY_SIZE 28
 static uint8_t gpuUsageHistory[HISTORY_SIZE];
+static uint8_t gpuMemoryHistory[HISTORY_SIZE];
 
 uint8_t initGPU(void)
 {
@@ -71,7 +75,7 @@ uint8_t readGPUTemperature()
 
 uint8_t getGPUName(char* name)
 {
-    if(nvmlDeviceGetName(device, name, PANEL_WIDTH - 1) != NVML_SUCCESS)
+    if(nvmlDeviceGetName(device, name, GPU_PANEL_WIDTH - 1) != NVML_SUCCESS)
     {
         return 1;
     }
@@ -85,27 +89,29 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
     readGPUTemperature();
 
     addEntryToHistory(gpuUsageHistory, HISTORY_SIZE, gpu.usagePercent);
+    addEntryToHistory(gpuMemoryHistory, HISTORY_SIZE, gpu.memPercent);
 }
 
 void drawGPUPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "GPU", PANEL_WIDTH);
-    char buffer[PANEL_WIDTH];
+    drawTitledWindow(panel->window, "GPU", GPU_PANEL_WIDTH);
+    char buffer[GPU_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, gpu.name);
     wattrset(panel->window, 0);
-    drawTitledBarWithPercentage(panel->window, 2, 1, gpu.usagePercent, "GPU:");
 
+    drawTitledBarWithPercentage(panel->window, 2, 1, gpu.usagePercent, "GPU:");
     drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, gpuUsageHistory);
 
-    drawTitledBarWithPercentage(panel->window, 7, 1, gpu.memPercent, "MEM:");
+    drawTitledBarWithPercentage(panel->window, 2, 36, gpu.memPercent, "MEM:");
+    drawGraphLabels(panel->window, 3, 36, 4, "  0%", "100%");
+    drawGraph(panel->window, 3, 41, 4, HISTORY_SIZE, gpuMemoryHistory);
+
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(panel->window, 8, 1, buffer);
 }
-
-#define GPU_PANEL_HEIGHT 10
 
 uint8_t initGPUPanel(Panel* panel)
 {
@@ -114,8 +120,9 @@ uint8_t initGPUPanel(Panel* panel)
         return 1;
     }
 
-    panel->window = newwin(GPU_PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
+    panel->window = newwin(GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH, 0, 0);
     panel->height = GPU_PANEL_HEIGHT;
+    panel->width = GPU_PANEL_WIDTH;
 
     panel->update = &updateGPUValues;
     panel->draw = &drawGPUPanel;

@@ -112,7 +112,7 @@ void drawFetchPanel(Panel* panel)
     char buffer[PANEL_WIDTH - 9];
     uint32_t hours = fetchData.uptime / 3600;
     float mins = fetchData.uptime / 60 - (hours * 60);
-    sprintf(buffer, "%2.0f:%2.0f", (float) hours, mins);
+    sprintf(buffer, "%2.0f:%02.0f", (float) hours, mins);
     mvwaddstr(panel->window, 4, 9, buffer);
 }
 
@@ -120,6 +120,7 @@ uint8_t initFetchPanel(Panel* panel)
 {
     panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->height = PANEL_HEIGHT;
+    panel->width = PANEL_WIDTH;
 
     panel->update = &updateFetchValues;
     panel->draw = &drawFetchPanel;

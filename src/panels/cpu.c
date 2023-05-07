@@ -6,8 +6,11 @@
 #include <stdlib.h>
 #include "../display.h"
 
+#define CPU_PANEL_HEIGHT 9
+#define CPU_PANEL_WIDTH 40
+
 typedef struct {
-    char name[PANEL_WIDTH - 1];
+    char name[CPU_PANEL_WIDTH - 1];
     uint64_t totalLast;
     uint64_t idleLast;
     float usagePercent;
@@ -86,8 +89,9 @@ uint8_t getCPUName()
         if(strstr(line, "model name"))
         {
             char* start = strstr(line, ":");
-            strncpy(cpu.name, start + 2, PANEL_WIDTH - 1);
-            cpu.name[PANEL_WIDTH - 2] = '\0'; //Add null terminator
+            strncpy(cpu.name, start + 2, CPU_PANEL_WIDTH - 3);
+            cpu.name[strcspn(cpu.name, "\n")] = '\0'; //Replace newline by null terminator
+            cpu.name[CPU_PANEL_WIDTH - 2] = '\0'; //Add null terminator
             free(line);
             fclose(cpuinfo);
             return 0;
@@ -115,22 +119,21 @@ void drawCPUPanel(Panel* panel)
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, cpu.name);
     wattrset(panel->window, 0);
+
     drawBarWithPercentage(panel->window, 2, 1, cpu.usagePercent);
+    drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
+    drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, cpuUsageHistory);
 
     char buffer[PANEL_WIDTH];
     sprintf(buffer, "Temp: %4.1f °C", cpu.temperature);
-    mvwaddstr(panel->window, 3, 1, buffer);
-
-    drawGraphLabels(panel->window, 4, 1, 4, "  0%", "100%");
-    drawGraph(panel->window, 4, 6, 4, HISTORY_SIZE, cpuUsageHistory);
+    mvwaddstr(panel->window, 7, 1, buffer);
 }
-
-#define CPU_PANEL_HEIGHT 9
 
 void initCPUPanel(Panel* panel)
 {
-    panel->window = newwin(CPU_PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->height = CPU_PANEL_HEIGHT;
+    panel->width = CPU_PANEL_WIDTH;
+    panel->window = newwin(CPU_PANEL_HEIGHT, CPU_PANEL_WIDTH, 0, 0);
     if(getCPUName())
     {
         strcpy(cpu.name, "CANNOT DETECT");

@@ -5,6 +5,9 @@
 #include <string.h>
 #include "../display.h"
 
+#define RAM_PANEL_HEIGHT 8
+#define RAM_PANEL_WIDTH 30
+
 #define KB_TO_GB(X) ((X) / 1048576.0f)
 
 typedef struct {
@@ -14,7 +17,7 @@ typedef struct {
 } RAMStatus;
 
 static RAMStatus ram;
-#define HISTORY_SIZE 28
+#define HISTORY_SIZE 23
 static uint8_t ramUsageHistory[HISTORY_SIZE];
 
 uint8_t readRAMUsage()
@@ -48,8 +51,8 @@ void updateRAMValues(Panel* panel, uint16_t refreshInterval)
 
 void drawRAMPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "RAM", PANEL_WIDTH);
-    char buffer[PANEL_WIDTH];
+    drawTitledWindow(panel->window, "RAM", RAM_PANEL_WIDTH);
+    char buffer[RAM_PANEL_WIDTH];
 
     drawBarWithPercentage(panel->window, 1, 1, ram.usagePercent);
     sprintf(buffer, "Used: %4.1f/%4.1f GiB", KB_TO_GB(ram.totalKb - ram.freeKb), KB_TO_GB(ram.totalKb));
@@ -59,12 +62,11 @@ void drawRAMPanel(Panel* panel)
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, ramUsageHistory);
 }
 
-#define RAM_PANEL_HEIGHT 8
-
 void initRAMPanel(Panel* panel)
 {
-    panel->window = newwin(RAM_PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
     panel->height = RAM_PANEL_HEIGHT;
+    panel->width = RAM_PANEL_WIDTH;
+    panel->window = newwin(RAM_PANEL_HEIGHT, RAM_PANEL_WIDTH, 0, 0);
     panel->update = &updateRAMValues;
     panel->draw = &drawRAMPanel;
 }
