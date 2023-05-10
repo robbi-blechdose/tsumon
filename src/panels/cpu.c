@@ -7,7 +7,7 @@
 #include "../display.h"
 
 #define CPU_PANEL_HEIGHT 9
-#define CPU_PANEL_WIDTH 40
+#define CPU_PANEL_WIDTH 39
 
 typedef struct {
     char name[CPU_PANEL_WIDTH - 1];
@@ -18,7 +18,7 @@ typedef struct {
 } CPUStatus;
 
 static CPUStatus cpu;
-#define HISTORY_SIZE 28
+#define HISTORY_SIZE 32
 static uint8_t cpuUsageHistory[HISTORY_SIZE];
 
 uint8_t readCPUUsage()
@@ -114,13 +114,13 @@ void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 
 void drawCPUPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "CPU", PANEL_WIDTH);
+    drawTitledWindow(panel->window, "CPU", panel->width);
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, cpu.name);
     wattrset(panel->window, 0);
 
-    drawBarWithPercentage(panel->window, 2, 1, cpu.usagePercent);
+    drawTitledBarWithPercentage(panel->window, 2, 1, cpu.usagePercent, "AVG:");
     drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, cpuUsageHistory);
 
@@ -131,16 +131,14 @@ void drawCPUPanel(Panel* panel)
 
 void initCPUPanel(Panel* panel)
 {
-    panel->height = CPU_PANEL_HEIGHT;
-    panel->width = CPU_PANEL_WIDTH;
-    panel->window = newwin(CPU_PANEL_HEIGHT, CPU_PANEL_WIDTH, 0, 0);
+    initPanelBase(panel, CPU_PANEL_HEIGHT, CPU_PANEL_WIDTH);
+    panel->update = &updateCPUValues;
+    panel->draw = &drawCPUPanel;
+
     if(getCPUName())
     {
         strcpy(cpu.name, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
     readCPUUsage();
-
-    panel->update = &updateCPUValues;
-    panel->draw = &drawCPUPanel;
 }

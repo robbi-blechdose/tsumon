@@ -10,8 +10,6 @@
 typedef struct Panel {
     WINDOW* window;
 
-    uint8_t x;
-    uint8_t y;
     uint8_t width;
     uint8_t height;
 
@@ -19,9 +17,9 @@ typedef struct Panel {
     void (*draw)(struct Panel*);
 } Panel;
 
-uint8_t initPanel(Panel* panel);
-void updatePanel(Panel* panel, uint16_t refreshInterval);
-void drawPanelSettings(WINDOW* win, Panel* panel);
+void initPanelBase(Panel* panel, uint8_t height, uint8_t width);
+
+//void drawPanelSettings(WINDOW* win, Panel* panel);
 void quitPanel(Panel* panel);
 
 void addEntryToHistory(uint8_t* history, uint8_t size, uint8_t newValue);

@@ -212,9 +212,14 @@ void updateNetworkValues(Panel* panel, uint16_t refreshInterval)
     scaleHistory(upHistory, upHistoryScaled, &upHistoryScale);
 }
 
+void colorNetworkGraph(WINDOW* win, float value)
+{
+    wcolor_set(win, C_CB, 0);
+}
+
 void drawNetworkPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "Network", NETWORK_PANEL_WIDTH);
+    drawTitledWindow(panel->window, "Network", panel->width);
     char buffer[NETWORK_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
@@ -224,17 +229,15 @@ void drawNetworkPanel(Panel* panel)
     mvwaddstr(panel->window, 2, 1, buffer);
 
     drawGraphLabels(panel->window, 4, 1, 4, "   0", scaleNames[downHistoryScale]);
-    drawGraph(panel->window, 4, 6, 4, HISTORY_SIZE, downHistoryScaled);
+    drawGraphColor(panel->window, 4, 6, 4, HISTORY_SIZE, downHistoryScaled, &colorNetworkGraph);
 
     drawGraphLabels(panel->window, 4, 20, 4, "   0", scaleNames[upHistoryScale]);
-    drawGraph(panel->window, 4, 25, 4, HISTORY_SIZE, upHistoryScaled);
+    drawGraphColor(panel->window, 4, 25, 4, HISTORY_SIZE, upHistoryScaled, &colorNetworkGraph);
 }
 
 void initNetworkPanel(Panel* panel)
 {
-    panel->height = NETWORK_PANEL_HEIGHT;
-    panel->width = NETWORK_PANEL_WIDTH;
-    panel->window = newwin(NETWORK_PANEL_HEIGHT, NETWORK_PANEL_WIDTH, 0, 0);
+    initPanelBase(panel, NETWORK_PANEL_HEIGHT, NETWORK_PANEL_WIDTH);
 
     panel->update = &updateNetworkValues;
     panel->draw = &drawNetworkPanel;

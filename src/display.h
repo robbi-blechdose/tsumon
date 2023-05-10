@@ -7,7 +7,8 @@
 #define C_GB 1
 #define C_YB 2
 #define C_RB 3
-#define C_BC 4
+#define C_CB 4
+#define C_BC 5
 
 void ncursesSetup(void);
 
@@ -63,7 +64,13 @@ void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool
  * @param x X position
  * @param height
  * @param width
- * @param values Pointer to a list of values (assumed to be percentages of 0-100)
+ * @param values Pointer to a list of values (assumed to be 0-100)
+ * @param setColor Pointer to a function that sets the color (wcolor_set) based on the value received (0-100)
+ **/
+void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values, void (*setColor)(WINDOW*, float));
+
+/**
+ * Same as drawGraphColor, but uses standard green/yellow/red coloring
  **/
 void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values);
 

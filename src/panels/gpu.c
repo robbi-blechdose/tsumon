@@ -6,7 +6,7 @@
 #include "../display.h"
 
 #define GPU_PANEL_HEIGHT 10
-#define GPU_PANEL_WIDTH 70
+#define GPU_PANEL_WIDTH 69
 
 static nvmlDevice_t device;
 
@@ -94,7 +94,7 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
 
 void drawGPUPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "GPU", GPU_PANEL_WIDTH);
+    drawTitledWindow(panel->window, "GPU", panel->width);
     char buffer[GPU_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
@@ -105,9 +105,9 @@ void drawGPUPanel(Panel* panel)
     drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, gpuUsageHistory);
 
-    drawTitledBarWithPercentage(panel->window, 2, 36, gpu.memPercent, "MEM:");
-    drawGraphLabels(panel->window, 3, 36, 4, "  0%", "100%");
-    drawGraph(panel->window, 3, 41, 4, HISTORY_SIZE, gpuMemoryHistory);
+    drawTitledBarWithPercentage(panel->window, 2, 35, gpu.memPercent, "MEM:");
+    drawGraphLabels(panel->window, 3, 35, 4, "  0%", "100%");
+    drawGraph(panel->window, 3, 40, 4, HISTORY_SIZE, gpuMemoryHistory);
 
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(panel->window, 8, 1, buffer);
@@ -120,9 +120,7 @@ uint8_t initGPUPanel(Panel* panel)
         return 1;
     }
 
-    panel->window = newwin(GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH, 0, 0);
-    panel->height = GPU_PANEL_HEIGHT;
-    panel->width = GPU_PANEL_WIDTH;
+    initPanelBase(panel, GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH);
 
     panel->update = &updateGPUValues;
     panel->draw = &drawGPUPanel;

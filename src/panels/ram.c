@@ -51,7 +51,7 @@ void updateRAMValues(Panel* panel, uint16_t refreshInterval)
 
 void drawRAMPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "RAM", RAM_PANEL_WIDTH);
+    drawTitledWindow(panel->window, "RAM", panel->width);
     char buffer[RAM_PANEL_WIDTH];
 
     drawBarWithPercentage(panel->window, 1, 1, ram.usagePercent);
@@ -64,9 +64,7 @@ void drawRAMPanel(Panel* panel)
 
 void initRAMPanel(Panel* panel)
 {
-    panel->height = RAM_PANEL_HEIGHT;
-    panel->width = RAM_PANEL_WIDTH;
-    panel->window = newwin(RAM_PANEL_HEIGHT, RAM_PANEL_WIDTH, 0, 0);
+    initPanelBase(panel, RAM_PANEL_HEIGHT, RAM_PANEL_WIDTH);
     panel->update = &updateRAMValues;
     panel->draw = &drawRAMPanel;
 }

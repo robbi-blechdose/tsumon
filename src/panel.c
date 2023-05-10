@@ -3,44 +3,14 @@
 #include <stdlib.h>
 #include "display.h"
 
-/**
-void updatePanel(Panel* panel, uint16_t refreshInterval)
+void initPanelBase(Panel* panel, uint8_t height, uint8_t width)
 {
-    drawTitledWindow(panel->window, panelNames[panel->type], PANEL_WIDTH);
-
-    switch(panel->type)
-    {
-        case P_CPU:
-        {
-            updateCPUPanel(panel);
-            break;
-        }
-        case P_RAM:
-        {
-            readRAMUsage(panel);
-            drawRAMPanelContents(panel);
-            break;
-        }
-        case P_GPU:
-        {
-            updateGPUPanel(panel);
-            break;
-        }
-        case P_NETWORK:
-        {
-            updateNetworkPanel(panel, refreshInterval);
-            break;
-        }
-        case P_FETCH:
-        {
-            readUptime(panel);
-            drawFetchPanelContents(panel);
-            break;
-        }
-    }
-    wrefresh(panel->window);
+    panel->height = height;
+    panel->width = width;
+    panel->window = newwin(height, width, 0, 0);
 }
 
+/**
 void drawPanelSettings(WINDOW* win, Panel* panel)
 {
     switch(panel->type)

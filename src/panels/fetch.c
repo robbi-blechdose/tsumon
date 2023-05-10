@@ -4,6 +4,8 @@
 #include <string.h>
 #include "../display.h"
 
+#define FETCH_PANEL_WIDTH 30
+
 typedef struct {
     char os[PANEL_WIDTH - 5];
     char kernel[PANEL_WIDTH - 9];
@@ -95,7 +97,7 @@ void updateFetchValues(Panel* panel, uint16_t refreshInterval)
 
 void drawFetchPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "System", PANEL_WIDTH);
+    drawTitledWindow(panel->window, "System", panel->width);
 
     //Draw titles
     wattrset(panel->window, A_BOLD);
@@ -118,10 +120,7 @@ void drawFetchPanel(Panel* panel)
 
 uint8_t initFetchPanel(Panel* panel)
 {
-    panel->window = newwin(PANEL_HEIGHT, PANEL_WIDTH, 0, 0);
-    panel->height = PANEL_HEIGHT;
-    panel->width = PANEL_WIDTH;
-
+    initPanelBase(panel, PANEL_HEIGHT, FETCH_PANEL_WIDTH);
     panel->update = &updateFetchValues;
     panel->draw = &drawFetchPanel;
 

@@ -15,6 +15,7 @@ void ncursesSetup(void)
     init_pair(C_GB, COLOR_GREEN, COLOR_BLACK);
     init_pair(C_YB, COLOR_YELLOW, COLOR_BLACK);
     init_pair(C_RB, COLOR_RED, COLOR_BLACK);
+    init_pair(C_CB, COLOR_CYAN, COLOR_BLACK);
     init_pair(C_BC, COLOR_BLACK, COLOR_CYAN);
 }
 
@@ -108,11 +109,11 @@ void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool
     }
 }
 
-void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values)
+void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values, void (*setColor)(WINDOW*, float))
 {
     for(uint8_t i = 0; i < width; i++)
     {
-        setColorViaThreshold(win, values[i]);
+        setColor(win, values[i]);
 
         //Translate percentages into values fitting the graph height
         uint8_t value = values[i] * 0.1f * height;
@@ -150,6 +151,11 @@ void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width,
 
     //Reset color
     wcolor_set(win, C_WB, 0);
+}
+
+void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values)
+{
+    drawGraphColor(win, y, x, height, width, values, &setColorViaThreshold);
 }
 
 void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max)
