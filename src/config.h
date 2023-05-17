@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "panel.h"
 
 //Possible refresh intervals in milliseconds
 #define NUM_REFRESH_INTERVALS 4
@@ -15,11 +14,14 @@ extern const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS];
 typedef struct {
     int8_t refreshIntervalIndex;
     int8_t widthLimit;
+    int8_t highlightColor;
 } Configuration;
 
-uint8_t saveConfig(Configuration* config);
-uint8_t loadConfig(Configuration* config);
+extern Configuration config;
 
-void setInitialConfig(Configuration* config);
+uint8_t saveConfig(void);
+uint8_t loadConfig(void);
+
+void setInitialConfig(void);
 
 #endif

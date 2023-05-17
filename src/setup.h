@@ -16,14 +16,14 @@ extern uint8_t numPanels;
 
 void initSetup(WINDOW* win);
 
-void drawSetup(Configuration* config);
+void drawSetup(void);
 
 void moveCursor(int8_t* cursor, bool dec, int8_t max);
 
-void moveSetupCursorLR(bool left, Configuration* config);
-void moveSetupCursorUD(bool up, Configuration* config);
-void enterSetupCursor(Configuration* config);
-void cancelSetupCursor();
+void moveSetupCursorLR(bool left);
+void moveSetupCursorUD(bool up);
+void enterSetupCursor(void);
+void cancelSetupCursor(void);
 
 bool canExitSetup();
 

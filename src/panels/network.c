@@ -53,7 +53,7 @@ static uint8_t upHistoryScale;
 /**
  * Assumes a 1-second window
  **/
-uint8_t readNetworkUsage()
+uint8_t readNetworkUsage(void)
 {
     uint64_t totalDown;
     uint64_t totalUp;
@@ -214,12 +214,12 @@ void updateNetworkValues(Panel* panel, uint16_t refreshInterval)
 
 void colorNetworkGraph(WINDOW* win, float value)
 {
-    wcolor_set(win, C_CB, 0);
+    wcolor_set(win, C_CyanBlack, 0);
 }
 
 void drawNetworkPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "Network", panel->width);
+    drawPanelBase(panel, "Network");
     char buffer[NETWORK_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);

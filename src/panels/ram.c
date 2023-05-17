@@ -20,7 +20,7 @@ static RAMStatus ram;
 #define HISTORY_SIZE 23
 static uint8_t ramUsageHistory[HISTORY_SIZE];
 
-uint8_t readRAMUsage()
+uint8_t readRAMUsage(void)
 {
     uint64_t memFree, memAvailable, buffers, cached;
 
@@ -51,7 +51,7 @@ void updateRAMValues(Panel* panel, uint16_t refreshInterval)
 
 void drawRAMPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "RAM", panel->width);
+    drawPanelBase(panel, "RAM");
     char buffer[RAM_PANEL_WIDTH];
 
     drawBarWithPercentage(panel->window, 1, 1, ram.usagePercent);

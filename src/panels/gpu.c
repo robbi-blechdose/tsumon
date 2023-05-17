@@ -40,7 +40,7 @@ void quitGPU(void)
     nvmlShutdown();
 }
 
-uint8_t readGPUUsage()
+uint8_t readGPUUsage(void)
 {
     nvmlUtilization_t util;
     if(nvmlDeviceGetUtilizationRates(device, &util) != NVML_SUCCESS)
@@ -51,7 +51,7 @@ uint8_t readGPUUsage()
     return 0;
 }
 
-uint8_t readGPUMemoryUsage()
+uint8_t readGPUMemoryUsage(void)
 {
     nvmlMemory_t memory;
     if(nvmlDeviceGetMemoryInfo(device, &memory) != NVML_SUCCESS)
@@ -62,7 +62,7 @@ uint8_t readGPUMemoryUsage()
     return 0;
 }
 
-uint8_t readGPUTemperature()
+uint8_t readGPUTemperature(void)
 {
     uint32_t temp;
     if(nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp) != NVML_SUCCESS)
@@ -94,7 +94,7 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
 
 void drawGPUPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "GPU", panel->width);
+    drawPanelBase(panel, "GPU");
     char buffer[GPU_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);

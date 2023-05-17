@@ -72,7 +72,7 @@ uint8_t getHostname(char* hostname)
     return 0;
 }
 
-uint8_t readUptime()
+uint8_t readUptime(void)
 {
     FILE* uptime = fopen("/proc/uptime", "r");
     if(uptime == NULL)
@@ -97,7 +97,7 @@ void updateFetchValues(Panel* panel, uint16_t refreshInterval)
 
 void drawFetchPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "System", panel->width);
+    drawPanelBase(panel, "System");
 
     //Draw titles
     wattrset(panel->window, A_BOLD);

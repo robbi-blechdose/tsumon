@@ -42,8 +42,6 @@ WINDOW* infoWin;
 WINDOW* setupWin;
 WINDOW* setupEditWin;
 
-Configuration config;
-
 bool setupOpen = false;
 
 #define NUM_PANELS 5
@@ -55,10 +53,10 @@ void drawInfoWin(void)
     mvwaddstr(infoWin, 0, 1, "F2");
     mvwaddstr(infoWin, 0, 9, "F10");
     wattrset(infoWin, 0);
-    wcolor_set(infoWin, C_BC, 0);
+    wcolor_set(infoWin, C_BlackCyan, 0);
     mvwaddstr(infoWin, 0, 3, "Setup");
     mvwaddstr(infoWin, 0, 12, "Quit");
-    wcolor_set(infoWin, C_WB, 0);
+    wcolor_set(infoWin, C_WhiteBlack, 0);
     wrefresh(infoWin);
 }
 
@@ -130,7 +128,7 @@ void repositionWindows(void)
     wresize(setupEditWin, SETUP_EDIT_WIN_HEIGHT, SETUP_EDIT_WIN_WIDTH);
 }
 
-uint8_t initPanels()
+uint8_t initPanels(void)
 {
     initCPUPanel(&panels[0]);
     initRAMPanel(&panels[1]);
@@ -148,7 +146,7 @@ uint8_t initPanels()
     return 0;
 }
 
-void quitPanels()
+void quitPanels(void)
 {
     for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
@@ -165,9 +163,9 @@ int main(int argc, char* argv[])
     ESCDELAY = 100;
 
     //Load configs, possibly set initial configs when loading was unsuccessful
-    if(loadConfig(&config))
+    if(loadConfig())
     {
-        setInitialConfig(&config);
+        setInitialConfig();
     }
 
     //Set up panels
@@ -200,7 +198,7 @@ int main(int argc, char* argv[])
 
         if(setupOpen)
         {
-            drawSetup(&config);
+            drawSetup();
         }
         else
         {
@@ -238,7 +236,7 @@ int main(int argc, char* argv[])
             {
                 setupOpen = false;
                 //We closed the setup screen
-                saveConfig(&config);
+                saveConfig();
                 //Reinit panels in case we changed anything
                 quitPanels();
                 initPanels();
@@ -252,15 +250,15 @@ int main(int argc, char* argv[])
         }
         else if((c == KEY_LEFT || c == KEY_RIGHT) && setupOpen)
         {
-            moveSetupCursorLR(c == KEY_LEFT, &config);
+            moveSetupCursorLR(c == KEY_LEFT);
         }
         else if((c == KEY_UP || c == KEY_DOWN) && setupOpen)
         {
-            moveSetupCursorUD(c == KEY_UP, &config);
+            moveSetupCursorUD(c == KEY_UP);
         }
         else if((c == KEY_ENTER || c == '\n') && setupOpen)
         {
-            enterSetupCursor(&config);
+            enterSetupCursor();
         }
         else if(c == 27 && setupOpen) //Escape key
         {

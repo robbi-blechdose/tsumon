@@ -41,12 +41,12 @@ void insertMenuTree(MenuTree* mt, MenuTree* child)
     }
 }
 
-void drawMenuTree(MenuTree* mt, Configuration* config)
+void drawMenuTree(MenuTree* mt)
 {
-    mt->draw(mt, config);
+    mt->draw(mt);
     for(uint8_t i = 0; i < mt->numChildren; i++)
     {
-        drawMenuTree(mt->children[i], config);
+        drawMenuTree(mt->children[i]);
     }
 }
 

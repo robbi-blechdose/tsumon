@@ -11,27 +11,27 @@ void ncursesSetup(void)
     curs_set(0);
     //Set up colors
     start_color();
-    init_pair(C_WB, COLOR_WHITE, COLOR_BLACK);
-    init_pair(C_GB, COLOR_GREEN, COLOR_BLACK);
-    init_pair(C_YB, COLOR_YELLOW, COLOR_BLACK);
-    init_pair(C_RB, COLOR_RED, COLOR_BLACK);
-    init_pair(C_CB, COLOR_CYAN, COLOR_BLACK);
-    init_pair(C_BC, COLOR_BLACK, COLOR_CYAN);
+    init_pair(C_WhiteBlack, COLOR_WHITE, COLOR_BLACK);
+    init_pair(C_GreenBlack, COLOR_GREEN, COLOR_BLACK);
+    init_pair(C_YellowBlack, COLOR_YELLOW, COLOR_BLACK);
+    init_pair(C_RedBlack, COLOR_RED, COLOR_BLACK);
+    init_pair(C_CyanBlack, COLOR_CYAN, COLOR_BLACK);
+    init_pair(C_BlackCyan, COLOR_BLACK, COLOR_CYAN);
 }
 
 void setColorViaThreshold(WINDOW* win, float value)
 {
     if(value < THRESHOLD_GREEN)
     {
-        wcolor_set(win, C_GB, 0);
+        wcolor_set(win, C_GreenBlack, 0);
     }
     else if(value < THRESHOLD_YELLOW)
     {
-        wcolor_set(win, C_YB, 0);
+        wcolor_set(win, C_YellowBlack, 0);
     }
     else
     {
-        wcolor_set(win, C_RB, 0);
+        wcolor_set(win, C_RedBlack, 0);
     }
 }
 
@@ -56,7 +56,7 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
     }
 
     //Reset color
-    wcolor_set(win, C_WB, 0);
+    wcolor_set(win, C_WhiteBlack, 0);
 }
 
 void drawBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value)
@@ -76,7 +76,7 @@ void drawTitledBarWithPercentage(WINDOW* win, uint8_t y, uint8_t x, float value,
 
 void drawTitledWindow(WINDOW* win, const char* title, uint8_t width)
 {
-    wcolor_set(win, C_WB, 0);
+    wcolor_set(win, C_WhiteBlack, 0);
     box(win, 0, 0);
     mvwaddstr(win, 0, width / 2 - strlen(title) / 2, title);
 }
@@ -93,20 +93,6 @@ void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t curre
         }
     }
     mvwaddch(win, y, x + 1 + length, '>');
-}
-
-void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold)
-{
-    if(bold)
-    {
-        wattrset(win, A_BOLD);
-        mvwaddstr(win, y, x, str);
-        wattrset(win, 0);
-    }
-    else
-    {
-        mvwaddstr(win, y, x, str);
-    }
 }
 
 void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values, void (*setColor)(WINDOW*, float))
@@ -150,7 +136,7 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
     }
 
     //Reset color
-    wcolor_set(win, C_WB, 0);
+    wcolor_set(win, C_WhiteBlack, 0);
 }
 
 void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values)
@@ -164,4 +150,18 @@ void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const ch
     mvwaddstr(win, y + height - 1, x, min);
     wmove(win, y, x + strlen(max));
     wvline(win, ACS_VLINE, height);
+}
+
+void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold)
+{
+    if(bold)
+    {
+        wattrset(win, A_BOLD);
+        mvwaddstr(win, y, x, str);
+        wattrset(win, 0);
+    }
+    else
+    {
+        mvwaddstr(win, y, x, str);
+    }
 }

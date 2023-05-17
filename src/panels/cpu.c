@@ -21,7 +21,7 @@ static CPUStatus cpu;
 #define HISTORY_SIZE 32
 static uint8_t cpuUsageHistory[HISTORY_SIZE];
 
-uint8_t readCPUUsage()
+uint8_t readCPUUsage(void)
 {
     //Read new values from /proc/stat
     FILE* stat = fopen("/proc/stat", "r");
@@ -54,7 +54,7 @@ uint8_t readCPUUsage()
     return 0;
 }
 
-uint8_t readCPUTemperature()
+uint8_t readCPUTemperature(void)
 {
     FILE* hwmon1 = fopen("/sys/class/hwmon/hwmon1/temp1_input", "r");
     if(hwmon1 == NULL)
@@ -74,7 +74,7 @@ uint8_t readCPUTemperature()
     return 0;
 }
 
-uint8_t getCPUName()
+uint8_t getCPUName(void)
 {
     FILE* cpuinfo = fopen("/proc/cpuinfo", "r");
     if(cpuinfo == NULL)
@@ -114,7 +114,7 @@ void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 
 void drawCPUPanel(Panel* panel)
 {
-    drawTitledWindow(panel->window, "CPU", panel->width);
+    drawPanelBase(panel, "CPU");
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, cpu.name);

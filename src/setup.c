@@ -19,7 +19,7 @@
 #define MM_CURSOR_LAST        MM_CURSOR_PANELS
 MenuTree menuTree;
 
-void drawMainMenu(MenuTree* menu, Configuration* config)
+void drawMainMenu(MenuTree* menu)
 {
     drawTitledWindow(menu->win, "Setup", SETUP_WIN_WIDTH);
     
@@ -30,12 +30,12 @@ void drawMainMenu(MenuTree* menu, Configuration* config)
     wattrset(menu->win, 0);
 }
 
-void moveMainMenuCursor(bool up, MenuTree* menu, Configuration* config)
+void moveMainMenuCursor(bool up, MenuTree* menu)
 {
     moveCursor(&menu->cursor, up, MM_CURSOR_LAST);
 }
 
-void enterMainCursor(MenuTree* mt, Configuration* config)
+void enterMainCursor(MenuTree* mt)
 {
     mt->children[mt->cursor]->selected = true;
     mt->selected = false;
@@ -65,11 +65,18 @@ void initSetup(WINDOW* win)
     initWidthLimitMenu(widthLimit);
     widthLimit->win = win; //TODO: sub window
     insertMenuTree(&menuTree, widthLimit);
+
+    //Highlight color
+    MenuTree* highlightColor = malloc(sizeof(MenuTree));
+    createMenuTree(highlightColor);
+    initHighlightColorMenu(highlightColor);
+    highlightColor->win = win; //TODO: sub window
+    insertMenuTree(&menuTree, highlightColor);
 }
 
-void drawSetup(Configuration* config)
+void drawSetup(void)
 {
-    drawMenuTree(&menuTree, config);
+    drawMenuTree(&menuTree);
     wrefresh(menuTree.win);
 }
 
@@ -93,13 +100,13 @@ void moveCursor(int8_t* cursor, bool dec, int8_t max)
     }
 }
 
-bool moveSetupCursorLRTree(bool left, Configuration* config, MenuTree* mt)
+bool moveSetupCursorLRTree(bool left, MenuTree* mt)
 {
     if(mt->selected)
     {
         if(mt->moveCursorLR != NULL)
         {
-            mt->moveCursorLR(left, mt, config);
+            mt->moveCursorLR(left, mt);
         }
         return true;
     }
@@ -107,7 +114,7 @@ bool moveSetupCursorLRTree(bool left, Configuration* config, MenuTree* mt)
     {
         for(uint8_t i = 0; i < mt->numChildren; i++)
         {
-            if(moveSetupCursorLRTree(left, config, mt->children[i]))
+            if(moveSetupCursorLRTree(left, mt->children[i]))
             {
                 return true;
             }
@@ -116,18 +123,18 @@ bool moveSetupCursorLRTree(bool left, Configuration* config, MenuTree* mt)
     }
 }
 
-void moveSetupCursorLR(bool left, Configuration* config)
+void moveSetupCursorLR(bool left)
 {
-    moveSetupCursorLRTree(left, config, &menuTree);
+    moveSetupCursorLRTree(left, &menuTree);
 }
 
-bool moveSetupCursorUDTree(bool up, Configuration* config, MenuTree* mt)
+bool moveSetupCursorUDTree(bool up, MenuTree* mt)
 {
     if(mt->selected)
     {
         if(mt->moveCursorUD != NULL)
         {
-            mt->moveCursorUD(up, mt, config);
+            mt->moveCursorUD(up, mt);
         }
         return true;
     }
@@ -135,7 +142,7 @@ bool moveSetupCursorUDTree(bool up, Configuration* config, MenuTree* mt)
     {
         for(uint8_t i = 0; i < mt->numChildren; i++)
         {
-            if(moveSetupCursorUDTree(up, config, mt->children[i]))
+            if(moveSetupCursorUDTree(up, mt->children[i]))
             {
                 return true;
             }
@@ -144,18 +151,18 @@ bool moveSetupCursorUDTree(bool up, Configuration* config, MenuTree* mt)
     }
 }
 
-void moveSetupCursorUD(bool up, Configuration* config)
+void moveSetupCursorUD(bool up)
 {
-    moveSetupCursorUDTree(up, config, &menuTree);
+    moveSetupCursorUDTree(up, &menuTree);
 }
 
-bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
+bool enterSetupCursorTree(MenuTree* mt)
 {
     if(mt->selected)
     {
         if(mt->enterCursor != NULL)
         {
-            mt->enterCursor(mt, config);
+            mt->enterCursor(mt);
         }
         return true;
     }
@@ -163,7 +170,7 @@ bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
     {
         for(uint8_t i = 0; i < mt->numChildren; i++)
         {
-            if(enterSetupCursorTree(config, mt->children[i]))
+            if(enterSetupCursorTree(mt->children[i]))
             {
                 return true;
             }
@@ -172,12 +179,12 @@ bool enterSetupCursorTree(Configuration* config, MenuTree* mt)
     return false;
 }
 
-void enterSetupCursor(Configuration* config)
+void enterSetupCursor(void)
 {
-    enterSetupCursorTree(config, &menuTree);
+    enterSetupCursorTree(&menuTree);
 }
 
-bool cancelSetupCursorTree(Configuration* config, MenuTree* mt)
+bool cancelSetupCursorTree(MenuTree* mt)
 {
     if(mt->selected)
     {
@@ -188,7 +195,7 @@ bool cancelSetupCursorTree(Configuration* config, MenuTree* mt)
     
     for(uint8_t i = 0; i < mt->numChildren; i++)
     {
-        if(cancelSetupCursorTree(config, mt->children[i]))
+        if(cancelSetupCursorTree(mt->children[i]))
         {
             return true;
         }
@@ -196,7 +203,7 @@ bool cancelSetupCursorTree(Configuration* config, MenuTree* mt)
     return false;
 }
 
-void cancelSetupCursor(Configuration* config)
+void cancelSetupCursor(void)
 {
     //Can't get out of the root node
     if(menuTree.selected)
@@ -204,7 +211,7 @@ void cancelSetupCursor(Configuration* config)
         return;
     }
 
-    cancelSetupCursorTree(config, &menuTree);
+    cancelSetupCursorTree(&menuTree);
 }
 
 bool canExitSetup()

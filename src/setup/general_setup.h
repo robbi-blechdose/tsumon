@@ -6,5 +6,6 @@
 
 void initRefreshIntervalMenu(MenuTree* menu);
 void initWidthLimitMenu(MenuTree* menu);
+void initHighlightColorMenu(MenuTree* menu);
 
 #endif

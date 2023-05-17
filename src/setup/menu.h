@@ -13,10 +13,10 @@ typedef struct MenuTree {
 
     WINDOW* win;
 
-    void (*moveCursorLR)(bool, struct MenuTree*, Configuration*);
-    void (*moveCursorUD)(bool, struct MenuTree*, Configuration*);
-    void (*enterCursor)(struct MenuTree*, Configuration*);
-    void (*draw)(struct MenuTree*, Configuration*);
+    void (*moveCursorLR)(bool, struct MenuTree*);
+    void (*moveCursorUD)(bool, struct MenuTree*);
+    void (*enterCursor)(struct MenuTree*);
+    void (*draw)(struct MenuTree*);
 
     uint8_t numChildren;
     struct MenuTree** children;
@@ -26,7 +26,7 @@ typedef struct MenuTree {
 void createMenuTree(MenuTree* mt);
 void insertMenuTree(MenuTree* mt, MenuTree* child);
 
-void drawMenuTree(MenuTree* mt, Configuration* config);
+void drawMenuTree(MenuTree* mt);
 
 void destroyMenuTree(MenuTree* mt);
 

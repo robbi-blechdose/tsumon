@@ -4,6 +4,9 @@
 #include <stdint.h>
 #include <ncurses.h>
 
+#include "config.h"
+extern Configuration config;
+
 #define PANEL_HEIGHT 6
 #define PANEL_WIDTH 35
 
@@ -18,6 +21,8 @@ typedef struct Panel {
 } Panel;
 
 void initPanelBase(Panel* panel, uint8_t height, uint8_t width);
+
+void drawPanelBase(Panel* panel, const char* title);
 
 //void drawPanelSettings(WINDOW* win, Panel* panel);
 void quitPanel(Panel* panel);

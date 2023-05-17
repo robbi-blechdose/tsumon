@@ -1,7 +1,10 @@
 #include "config.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+Configuration config;
 
 const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS] = {
      250,
@@ -20,7 +23,7 @@ char* getFullConfigPath(const char* name)
     return configPath;
 }
 
-uint8_t saveConfig(Configuration* config)
+uint8_t saveConfig(void)
 {
     char* configPath = getFullConfigPath(CONFIG_NAME);
     FILE* configFile = fopen(configPath, "wb");
@@ -30,7 +33,7 @@ uint8_t saveConfig(Configuration* config)
         return 1;
     }
 
-    if(fwrite(config, sizeof(Configuration), 1, configFile) != 1)
+    if(fwrite(&config, sizeof(Configuration), 1, configFile) != 1)
     {
         return 2;
     }
@@ -39,7 +42,7 @@ uint8_t saveConfig(Configuration* config)
     return 0;
 }
 
-uint8_t loadConfig(Configuration* config)
+uint8_t loadConfig(void)
 {
     char* configPath = getFullConfigPath(CONFIG_NAME);
     FILE* configFile = fopen(configPath, "rb");
@@ -49,7 +52,7 @@ uint8_t loadConfig(Configuration* config)
         return 1;
     }
 
-    if(fread(config, sizeof(Configuration), 1, configFile) != 1)
+    if(fread(&config, sizeof(Configuration), 1, configFile) != 1)
     {
         return 2;
     }
@@ -58,8 +61,9 @@ uint8_t loadConfig(Configuration* config)
     return 0;
 }
 
-void setInitialConfig(Configuration* config)
+void setInitialConfig(void)
 {
-    config->refreshIntervalIndex = 1;
-    config->widthLimit = 0;
+    config.refreshIntervalIndex = 1;
+    config.widthLimit = 0;
+    config.highlightColor = 0;
 }

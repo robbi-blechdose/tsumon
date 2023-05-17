@@ -3,12 +3,15 @@
 
 #include <ncurses.h>
 
-#define C_WB 0
-#define C_GB 1
-#define C_YB 2
-#define C_RB 3
-#define C_CB 4
-#define C_BC 5
+typedef enum {
+    C_WhiteBlack,
+    C_GreenBlack,
+    C_YellowBlack,
+    C_RedBlack,
+    C_CyanBlack,
+    C_BlackCyan,
+    NUM_COLOR_PAIRS
+} ColorPairs;
 
 void ncursesSetup(void);
 
@@ -55,8 +58,6 @@ void drawTitledWindow(WINDOW* win, const char* title, uint8_t width);
  **/
 void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t current);
 
-void drawStringCondBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold);
-
 /**
  * Draws a graph in the specified window at position.
  * The values are assumed to the same number of elements as the graph width.
@@ -75,5 +76,7 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
 void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values);
 
 void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max);
+
+void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold);
 
 #endif
