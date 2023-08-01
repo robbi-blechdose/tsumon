@@ -6,6 +6,7 @@ Currently, it shows:
 - RAM usage
 - GPU usage and temperature, GPU memory usage
 - Network usage (up/down)
+- System information (OS, kernel, hostname, uptime)
 
 ## Supported hardware
 
@@ -15,4 +16,4 @@ This is due to the fact an NVidia library is used to get data from the GPU.
 ## Building
 
 Requires `ncurses` and `nvidia-ml` libraries.
-With those installed, simply running `make` should produce an `spmon` executable.
+With those installed, simply running `make` should produce an `tsumon` executable.

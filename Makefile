@@ -1,7 +1,7 @@
 CC		= gcc
 
 CFLAGS	= -Wall -g
-LDFLAGS	= -lncursesw -lnvidia-ml
+LDFLAGS	= -lncursesw -ldl #-lnvidia-ml
 
 PNAME	= tsumon
 

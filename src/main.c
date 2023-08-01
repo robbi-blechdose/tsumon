@@ -207,9 +207,8 @@ int main(int argc, char* argv[])
                 if(panels[i].update != NULL)
                 {
                     panels[i].update(&panels[i], refreshIntervals[config.refreshIntervalIndex]);
-                    //TODO: move outside null check
-                    panels[i].draw(&panels[i]);
                 }
+                panels[i].draw(&panels[i]);
                 wrefresh(panels[i].window);
             }
         }
