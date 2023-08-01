@@ -8,11 +8,6 @@
 #include "setup/menu.h"
 #include "setup/general_setup.h"
 
-
-//TODO: switch to derwin() subwindows
-//TODO: add customizable "highlight color" (used for cpu/gpu name, ...)
-
-
 #define MM_CURSOR_REFRESH     0
 #define MM_CURSOR_WIDTHLIMIT  1
 #define MM_CURSOR_PANELS      2
@@ -56,21 +51,21 @@ void initSetup(WINDOW* win)
     MenuTree* refreshInterval = malloc(sizeof(MenuTree));
     createMenuTree(refreshInterval);
     initRefreshIntervalMenu(refreshInterval);
-    refreshInterval->win = win; //TODO: sub window
+    refreshInterval->win = win; //TODO: sub window?
     insertMenuTree(&menuTree, refreshInterval);
 
     //Width limit
     MenuTree* widthLimit = malloc(sizeof(MenuTree));
     createMenuTree(widthLimit);
     initWidthLimitMenu(widthLimit);
-    widthLimit->win = win; //TODO: sub window
+    widthLimit->win = win; //TODO: sub window?
     insertMenuTree(&menuTree, widthLimit);
 
     //Highlight color
     MenuTree* highlightColor = malloc(sizeof(MenuTree));
     createMenuTree(highlightColor);
     initHighlightColorMenu(highlightColor);
-    highlightColor->win = win; //TODO: sub window
+    highlightColor->win = win; //TODO: sub window?
     insertMenuTree(&menuTree, highlightColor);
 }
 

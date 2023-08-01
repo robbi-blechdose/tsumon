@@ -45,6 +45,7 @@ void drawBar(WINDOW* win, uint8_t y, uint8_t x, float value)
     //Draw bar
     for(uint8_t i = 0; i < 20; i++)
     {
+        //0-100 range / 5 = 20 possible values = width of the bar
         if(i < value / 5)
         {
             mvwaddch(win, y, x + 1 + i, '|');
@@ -107,9 +108,10 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
         //Draw bar
         for(uint8_t j = 0; j < height; j++)
         {
+            char* str = " ";
             if(value / 10 > j)
             {
-                mvwaddstr(win, y + height - 1 - j, i + x, "\u2588");
+                str = "\u2588";
             }
             else if(value > j * 10)
             {
@@ -117,21 +119,18 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
 
                 if(diff < 3)
                 {
-                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2582");
+                    str = "\u2582";
                 }
                 else if(diff < 7)
                 {
-                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2584");
+                    str = "\u2584";
                 }
                 else
                 {
-                    mvwaddstr(win, y + height - 1 - j, i + x, "\u2586");
+                    str = "\u2586";
                 }
             }
-            else
-            {
-                mvwaddch(win, y + height - 1 - j, i + x, ' ');
-            }
+            mvwaddstr(win, y + height - 1 - j, i + x, str);
         }
     }
 
