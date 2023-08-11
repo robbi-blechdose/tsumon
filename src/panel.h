@@ -27,6 +27,17 @@ void drawPanelBase(Panel* panel, const char* title);
 //void drawPanelSettings(WINDOW* win, Panel* panel);
 void quitPanel(Panel* panel);
 
-void addEntryToHistory(uint8_t* history, uint8_t size, uint8_t newValue);
+/**
+ * Helper functions often used by panels
+ **/
+
+/**
+ * Shifts all entries forwards, then adds a new last entry
+ **/
+void addEntryToHistory(void* restrict history, uint8_t size, void* restrict newValue, size_t typeSize);
+
+extern const uint64_t byteScales[];
+extern const char* byteScaleNames[];
+void scaleByteHistory(uint64_t* history, uint8_t size, uint8_t* scaledHistory, uint8_t* scale);
 
 #endif

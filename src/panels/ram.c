@@ -46,7 +46,8 @@ uint8_t readRAMUsage(void)
 void updateRAMValues(Panel* panel, uint16_t refreshInterval)
 {
     readRAMUsage();
-    addEntryToHistory(ramUsageHistory, HISTORY_SIZE, ram.usagePercent);
+    uint8_t newValue = ram.usagePercent;
+    addEntryToHistory(ramUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
 
 void drawRAMPanel(Panel* panel)

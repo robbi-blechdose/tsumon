@@ -121,8 +121,10 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
     readGPUMemoryUsage();
     readGPUTemperature();
 
-    addEntryToHistory(gpuUsageHistory, HISTORY_SIZE, gpu.usagePercent);
-    addEntryToHistory(gpuMemoryHistory, HISTORY_SIZE, gpu.memPercent);
+    uint8_t newValue = gpu.usagePercent;
+    addEntryToHistory(gpuUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
+    newValue = gpu.memPercent;
+    addEntryToHistory(gpuMemoryHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
 
 void drawGPUPanel(Panel* panel)

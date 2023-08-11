@@ -35,6 +35,7 @@
 #include "panels/gpu.h"
 #include "panels/network.h"
 #include "panels/fetch.h"
+#include "panels/disk.h"
 
 int32_t screenX, screenY;
 //Windows
@@ -44,7 +45,7 @@ WINDOW* setupEditWin;
 
 bool setupOpen = false;
 
-#define NUM_PANELS 5
+#define NUM_PANELS 6
 Panel panels[NUM_PANELS];
 
 void drawInfoWin(void)
@@ -134,7 +135,8 @@ uint8_t initPanels(void)
     initRAMPanel(&panels[1]);
     initGPUPanel(&panels[2]);
     initNetworkPanel(&panels[3]);
-    initFetchPanel(&panels[4]);
+    initDiskPanel(&panels[4]);
+    initFetchPanel(&panels[5]);
 
     /**
     if(initPanel(&panels[i]))

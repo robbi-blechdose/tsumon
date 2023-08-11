@@ -109,7 +109,8 @@ void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 {
     readCPUUsage();
     readCPUTemperature();
-    addEntryToHistory(cpuUsageHistory, HISTORY_SIZE, cpu.usagePercent);
+    uint8_t newValue = cpu.usagePercent;
+    addEntryToHistory(cpuUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
 
 void drawCPUPanel(Panel* panel)
