@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include "../display.h"
 
-#define GPU_PANEL_HEIGHT 10
-#define GPU_PANEL_WIDTH 69
+#define GPU_PANEL_HEIGHT 9
+#define GPU_PANEL_WIDTH 70
 
 static nvmlDevice_t device;
 
@@ -140,12 +140,12 @@ void drawGPUPanel(Panel* panel)
     drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, gpuUsageHistory);
 
-    drawTitledBarWithPercentage(panel->window, 2, 35, gpu.memPercent, "MEM:");
-    drawGraphLabels(panel->window, 3, 35, 4, "  0%", "100%");
-    drawGraph(panel->window, 3, 40, 4, HISTORY_SIZE, gpuMemoryHistory);
+    drawTitledBarWithPercentage(panel->window, 2, 36, gpu.memPercent, "MEM:");
+    drawGraphLabels(panel->window, 3, 36, 4, "  0%", "100%");
+    drawGraph(panel->window, 3, 41, 4, HISTORY_SIZE, gpuMemoryHistory);
 
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
-    mvwaddstr(panel->window, 8, 1, buffer);
+    mvwaddstr(panel->window, 7, 1, buffer);
 }
 
 /**

@@ -7,7 +7,7 @@
 #include "panel.h"
 
 #define SETUP_WIN_HEIGHT 12
-#define SETUP_WIN_WIDTH  60
+#define SETUP_WIN_WIDTH  70
 
 #define SETUP_EDIT_WIN_HEIGHT 3
 #define SETUP_EDIT_WIN_WIDTH 30

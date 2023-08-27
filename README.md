@@ -6,12 +6,13 @@ Currently, it shows:
 - RAM usage
 - GPU usage and temperature, GPU memory usage
 - Network usage (up/down)
+- Disk usage (read/write)
 - System information (OS, kernel, hostname, uptime)
 
 ## Supported hardware
 
-Currently only NVidia GPUs are supported.
-This is due to the fact an NVidia library is used to get data from the GPU.
+GPU monitoring is currently only supported on NVidia GPUs.
+tsumon can be run on non-NVidia systems as well with disabled GPU monitoring.
 
 ## Building
 
