@@ -11,9 +11,7 @@
 
 typedef struct {
     char name[CPU_PANEL_WIDTH - 1];
-    uint64_t totalLast;
-    uint64_t idleLast;
-    float usagePercent;
+    CPUUsage usage;
     float temperature;
 } CPUStatus;
 
@@ -21,7 +19,7 @@ static CPUStatus cpu;
 #define HISTORY_SIZE 32
 static uint8_t cpuUsageHistory[HISTORY_SIZE];
 
-uint8_t readCPUUsage(void)
+uint8_t readCPUUsage(char* name, CPUUsage* usage)
 {
     //Read new values from /proc/stat
     FILE* stat = fopen("/proc/stat", "r");
@@ -29,27 +27,47 @@ uint8_t readCPUUsage(void)
     {
         return 1;
     }
+
+    char pattern[64];
+    strcpy(pattern, name);
+    strcat(pattern, " %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu");
+
     uint64_t user, nice, system, idle, iowait, irq, softirq, steal, guest, guest_nice;
-    if(fscanf(stat, "cpu %lu %lu %lu %lu %lu %lu %lu %lu %lu %lu", &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice) != 10)
+
+    char* line = NULL;
+    size_t n;
+    bool found = false;
+    while(getline(&line, &n, stat) > 0)
     {
-        fclose(stat);
-        return 2;
+        if(sscanf(line, pattern, &user, &nice, &system, &idle, &iowait, &irq, &softirq, &steal, &guest, &guest_nice) == 10)
+        {
+            found = true;
+            break;
+        }
+    }
+    if(line != NULL)
+    {
+        free(line);
     }
     fclose(stat);
+    if(!found)
+    {
+        return 2;
+    }
 
     //Calculate total CPU time
     uint64_t cpuTotal = user + nice + system + idle + iowait + irq + softirq + steal + guest + guest_nice;
     uint64_t cpuIdle = idle + iowait;
     //Calculate delta times
-    float totalDelta = cpuTotal - cpu.totalLast;
-    float idleDelta = cpuIdle - cpu.idleLast;
+    float totalDelta = cpuTotal - usage->totalLast;
+    float idleDelta = cpuIdle - usage->idleLast;
     //Calculate CPU usage
     const uint64_t perSecond = (1000 / 10 / sysconf(_SC_CLK_TCK));
-    cpu.usagePercent = (1.0f - (idleDelta / totalDelta)) * 100 * perSecond;
+    usage->usagePercent = (1.0f - (idleDelta / totalDelta)) * 100 * perSecond;
 
     //Swap values
-    cpu.totalLast = cpuTotal;
-    cpu.idleLast = cpuIdle;
+    usage->totalLast = cpuTotal;
+    usage->idleLast = cpuIdle;
 
     return 0;
 }
@@ -107,9 +125,9 @@ uint8_t getCPUName(void)
 
 void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 {
-    readCPUUsage();
+    readCPUUsage("cpu", &cpu.usage);
     readCPUTemperature();
-    uint8_t newValue = cpu.usagePercent;
+    uint8_t newValue = cpu.usage.usagePercent;
     addEntryToHistory(cpuUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
 
@@ -121,7 +139,7 @@ void drawCPUPanel(Panel* panel)
     mvwaddstr(panel->window, 1, 1, cpu.name);
     wattrset(panel->window, 0);
 
-    drawTitledBarWithPercentage(panel->window, 2, 1, cpu.usagePercent, "AVG:");
+    drawTitledBarWithPercentage(panel->window, 2, 1, cpu.usage.usagePercent, "AVG:");
     drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
     drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, cpuUsageHistory);
 
@@ -141,5 +159,5 @@ void initCPUPanel(Panel* panel)
         strcpy(cpu.name, "CANNOT DETECT");
     }
     //Do one read to make sure the first actual read has a valid previous value
-    readCPUUsage();
+    readCPUUsage("cpu", &cpu.usage);
 }

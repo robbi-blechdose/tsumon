@@ -28,9 +28,6 @@ static uint8_t upHistoryScaled[HISTORY_SIZE];
 static uint8_t downHistoryScale;
 static uint8_t upHistoryScale;
 
-/**
- * Assumes a 1-second window
- **/
 uint8_t readNetworkUsage(void)
 {
     uint64_t totalDown;

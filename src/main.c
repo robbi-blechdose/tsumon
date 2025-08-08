@@ -18,6 +18,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
+
+//TODO: separate all the panels out further to allow better customization, and allow cherry-picking and ordering panels by the user
+//TODO: also standardize panel height to allow for easier layouting
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -36,6 +40,7 @@
 #include "panels/network.h"
 #include "panels/fetch.h"
 #include "panels/disk.h"
+#include "panels/cpucores.h"
 
 int32_t screenX, screenY;
 //Windows
@@ -45,7 +50,7 @@ WINDOW* setupEditWin;
 
 bool setupOpen = false;
 
-#define NUM_PANELS 6
+#define NUM_PANELS 7
 Panel panels[NUM_PANELS];
 
 void drawInfoWin(void)
@@ -137,6 +142,7 @@ uint8_t initPanels(void)
     initNetworkPanel(&panels[3]);
     initDiskPanel(&panels[4]);
     initFetchPanel(&panels[5]);
+    initCPUCoresPanel(&panels[6]);
 
     /**
     if(initPanel(&panels[i]))

@@ -109,10 +109,12 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
         for(uint8_t j = 0; j < height; j++)
         {
             char* str = " ";
+            //Draw a full block if the value is still bigger than the current block
             if(value / 10 > j)
             {
                 str = "\u2588";
             }
+            //If not, draw block parts
             else if(value > j * 10)
             {
                 uint8_t diff = value - (value / 10) * 10;
@@ -163,4 +165,48 @@ void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* st
     {
         mvwaddstr(win, y, x, str);
     }
+}
+
+void drawPercentageBlock(WINDOW* win, uint8_t y, uint8_t x, uint8_t value)
+{
+    setColorViaThreshold(win, value);
+    float mappedValue = value * 8.0f / 10.0f; //The block characters are in eights, so we have to translate our value
+    char* str = "\u2588";
+    if(mappedValue <= 0.1f) //Account for a bit of float error
+    {
+        str = " ";
+    }
+    else if(mappedValue <= 10)
+    {
+        str = "\u2581";
+    }
+    else if(mappedValue <= 20)
+    {
+        str = "\u2582";
+    }
+    else if(mappedValue <= 30)
+    {
+        str = "\u2583";
+    }
+    else if(mappedValue <= 40)
+    {
+        str = "\u2584";
+    }
+    else if(mappedValue <= 50)
+    {
+        str = "\u2585";
+    }
+    else if(mappedValue <= 60)
+    {
+        str = "\u2586";
+    }
+    else if(mappedValue <= 70)
+    {
+        str = "\u2587";
+    }
+    
+    mvwaddstr(win, y, x, str);
+
+    //Reset color
+    wcolor_set(win, C_WhiteBlack, 0);
 }

@@ -61,6 +61,7 @@ void drawSlider(WINDOW* win, uint8_t y, uint8_t x, uint8_t length, uint8_t curre
 /**
  * Draws a graph in the specified window at position.
  * The values are assumed to the same number of elements as the graph width.
+ * @param win Window to draw to
  * @param y Y position
  * @param x X position
  * @param height
@@ -78,5 +79,14 @@ void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width,
 void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max);
 
 void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold);
+
+/**
+ * Draws a single (1x1 character) block character to display a percentage
+ * @param win Window to draw to
+ * @param y Y position
+ * @param x X position
+ * @param value
+ */
+void drawPercentageBlock(WINDOW* win, uint8_t y, uint8_t x, uint8_t value);
 
 #endif
