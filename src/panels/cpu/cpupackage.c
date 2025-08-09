@@ -31,7 +31,7 @@ void drawCPUPackagePanel(Panel* panel)
     drawPanelBorder(panel, "Package");
 
     char buffer[PANEL_WIDTH];
-    sprintf(buffer, "Freq: %4.1f GHz", cpu.frequency);
+    sprintf(buffer, "Freq: %4.1f GHz", cpu.frequency); //TODO: read frequency
     mvwaddstr(panel->window, 1, 1, buffer);
     
     sprintf(buffer, "Temp: %4.1f °C", cpu.temperature);

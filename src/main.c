@@ -35,8 +35,8 @@
 #include "config.h"
 
 #include "panels/cpu/cpu.h"
+#include "panels/gpu/gpu.h"
 #include "panels/ram.h"
-#include "panels/gpu.h"
 #include "panels/network.h"
 #include "panels/fetch.h"
 #include "panels/disk.h"

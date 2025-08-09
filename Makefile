@@ -6,7 +6,7 @@ LDFLAGS	= -lncursesw -ldl #-lnvidia-ml
 PNAME	= tsumon
 
 # Files to be compiled
-SRCDIR	=  ./src ./src/panels ./src/panels/cpu ./src/setup ./src/utils
+SRCDIR	=  ./src ./src/panels ./src/panels/cpu ./src/panels/gpu ./src/setup ./src/utils
 VPATH	= $(SRCDIR)
 SRC_C	= $(foreach dir, $(SRCDIR), $(wildcard $(dir)/*.c))
 OBJS	= $(notdir $(patsubst %.c, %.o, $(SRC_C)))
