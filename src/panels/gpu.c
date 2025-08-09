@@ -4,7 +4,9 @@
 #include <nvml.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include "../display.h"
+#include "../utils/history.h"
 
 #define GPU_PANEL_HEIGHT 9
 #define GPU_PANEL_WIDTH 70
@@ -129,7 +131,7 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
 
 void drawGPUPanel(Panel* panel)
 {
-    drawPanelBase(panel, "GPU");
+    drawPanelBorder(panel, "GPU");
     char buffer[GPU_PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
@@ -154,7 +156,7 @@ void drawGPUPanel(Panel* panel)
  **/
 void drawGPUPanelFail(Panel* panel)
 {
-    drawPanelBase(panel, "GPU");
+    drawPanelBorder(panel, "GPU");
 
     wcolor_set(panel->window, C_RedBlack, 0);
     mvwaddstr(panel->window, 4, 1, "GPU init failed - is libnvidiaml installed?");
@@ -169,7 +171,7 @@ uint8_t initGPUPanel(Panel* panel)
         return 1;
     }
 
-    initPanelBase(panel, GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH);
+    panelInit(panel, GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH);
 
     panel->update = &updateGPUValues;
     panel->draw = &drawGPUPanel;

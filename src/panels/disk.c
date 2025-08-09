@@ -1,7 +1,9 @@
 #include "disk.h"
 
 #include <stdio.h>
+
 #include "../display.h"
+#include "../utils/history.h"
 
 #define DISK_PANEL_HEIGHT 9
 
@@ -92,7 +94,7 @@ void colorDiskGraph(WINDOW* win, float value)
 
 void drawDiskPanel(Panel* panel)
 {
-    drawPanelBase(panel, "Disk");
+    drawPanelBorder(panel, "Disk");
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, disk.name);
@@ -112,7 +114,7 @@ void drawDiskPanel(Panel* panel)
 
 uint8_t initDiskPanel(Panel* panel)
 {
-    initPanelBase(panel, DISK_PANEL_HEIGHT, PANEL_WIDTH);
+    panelInit(panel, DISK_PANEL_HEIGHT, PANEL_WIDTH);
     readDiskName();
     panel->update = &updateDiskValues;
     panel->draw = &drawDiskPanel;

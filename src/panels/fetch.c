@@ -97,7 +97,7 @@ void updateFetchValues(Panel* panel, uint16_t refreshInterval)
 
 void drawFetchPanel(Panel* panel)
 {
-    drawPanelBase(panel, "System");
+    drawPanelBorder(panel, "System");
 
     //Draw titles
     wattrset(panel->window, A_BOLD);
@@ -120,7 +120,7 @@ void drawFetchPanel(Panel* panel)
 
 uint8_t initFetchPanel(Panel* panel)
 {
-    initPanelBase(panel, PANEL_HEIGHT, FETCH_PANEL_WIDTH);
+    panelInit(panel, PANEL_HEIGHT, FETCH_PANEL_WIDTH);
     panel->update = &updateFetchValues;
     panel->draw = &drawFetchPanel;
 

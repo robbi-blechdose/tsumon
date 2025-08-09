@@ -2,7 +2,7 @@
 #define _CPU_CORES_H
 
 #include <stdint.h>
-#include "../panel.h"
+#include "../../panel.h"
 
 void initCPUCoresPanel(Panel* panel);
 

@@ -34,13 +34,13 @@
 #include "setup.h"
 #include "config.h"
 
-#include "panels/cpu.h"
+#include "panels/cpu/cpu.h"
+#include "panels/cpu/cpucores.h"
 #include "panels/ram.h"
 #include "panels/gpu.h"
 #include "panels/network.h"
 #include "panels/fetch.h"
 #include "panels/disk.h"
-#include "panels/cpucores.h"
 
 int32_t screenX, screenY;
 //Windows
@@ -158,7 +158,8 @@ void quitPanels(void)
 {
     for(uint8_t i = 0; i < NUM_PANELS; i++)
     {
-        quitPanel(&panels[i]);
+        //TODO: switch to calling function pointer
+        panelQuit(&panels[i]);
     }
 }
 

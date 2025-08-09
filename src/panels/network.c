@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../display.h"
+#include "../utils/history.h"
 
 #define NETWORK_PANEL_HEIGHT 9
 
@@ -158,7 +160,7 @@ void colorNetworkGraph(WINDOW* win, float value)
 
 void drawNetworkPanel(Panel* panel)
 {
-    drawPanelBase(panel, "Network");
+    drawPanelBorder(panel, "Network");
     char buffer[PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
@@ -177,7 +179,7 @@ void drawNetworkPanel(Panel* panel)
 
 void initNetworkPanel(Panel* panel)
 {
-    initPanelBase(panel, NETWORK_PANEL_HEIGHT, PANEL_WIDTH);
+    panelInit(panel, NETWORK_PANEL_HEIGHT, PANEL_WIDTH);
 
     panel->update = &updateNetworkValues;
     panel->draw = &drawNetworkPanel;

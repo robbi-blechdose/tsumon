@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../display.h"
+#include "../utils/history.h"
 
 #define RAM_PANEL_HEIGHT 9
 #define RAM_PANEL_WIDTH 31
@@ -52,7 +54,7 @@ void updateRAMValues(Panel* panel, uint16_t refreshInterval)
 
 void drawRAMPanel(Panel* panel)
 {
-    drawPanelBase(panel, "RAM");
+    drawPanelBorder(panel, "RAM");
     char buffer[RAM_PANEL_WIDTH];
 
     drawBarWithPercentage(panel->window, 1, 1, ram.usagePercent);
@@ -65,7 +67,7 @@ void drawRAMPanel(Panel* panel)
 
 void initRAMPanel(Panel* panel)
 {
-    initPanelBase(panel, RAM_PANEL_HEIGHT, RAM_PANEL_WIDTH);
+    panelInit(panel, RAM_PANEL_HEIGHT, RAM_PANEL_WIDTH);
     panel->update = &updateRAMValues;
     panel->draw = &drawRAMPanel;
 }
