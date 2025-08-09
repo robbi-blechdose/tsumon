@@ -26,11 +26,16 @@ typedef struct Panel {
     void (*quit)(struct Panel*);
 } Panel;
 
+Panel* panelCreate(Panel* parent, uint8_t y, uint8_t x, uint8_t height, uint8_t width);
+void panelDestroy(Panel* panel);
+
 void panelInit(Panel* panel, uint8_t height, uint8_t width);
 void panelQuit(Panel* panel);
+
 void panelAddChild(Panel* panel, Panel* child);
+void panelDrawChildren(Panel* panel);
+void panelUpdateChildren(Panel* panel, uint16_t refreshInterval);
 
 void drawPanelBorder(Panel* panel, const char* title);
-
 
 #endif

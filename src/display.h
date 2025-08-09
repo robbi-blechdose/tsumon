@@ -75,8 +75,8 @@ void drawGraphColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t w
  * Same as drawGraphColor, but uses standard green/yellow/red coloring
  **/
 void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width, uint8_t* values);
-
-void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max);
+void drawGraphWithLabelsColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t graphWidth, uint8_t* values, void (*setColor)(WINDOW*, float), const char* min, const char* max);
+void drawGraphWithLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t graphWidth, uint8_t* values, const char* min, const char* max);
 
 void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold);
 

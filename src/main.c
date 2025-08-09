@@ -35,7 +35,6 @@
 #include "config.h"
 
 #include "panels/cpu/cpu.h"
-#include "panels/cpu/cpucores.h"
 #include "panels/ram.h"
 #include "panels/gpu.h"
 #include "panels/network.h"
@@ -50,7 +49,7 @@ WINDOW* setupEditWin;
 
 bool setupOpen = false;
 
-#define NUM_PANELS 7
+#define NUM_PANELS 6
 Panel panels[NUM_PANELS];
 
 void drawInfoWin(void)
@@ -142,7 +141,6 @@ uint8_t initPanels(void)
     initNetworkPanel(&panels[3]);
     initDiskPanel(&panels[4]);
     initFetchPanel(&panels[5]);
-    initCPUCoresPanel(&panels[6]);
 
     /**
     if(initPanel(&panels[i]))

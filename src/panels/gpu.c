@@ -21,7 +21,7 @@ typedef struct {
 } GPUStatus;
 
 static GPUStatus gpu;
-#define HISTORY_SIZE 28
+#define HISTORY_SIZE 27
 static uint8_t gpuUsageHistory[HISTORY_SIZE];
 static uint8_t gpuMemoryHistory[HISTORY_SIZE];
 
@@ -139,12 +139,10 @@ void drawGPUPanel(Panel* panel)
     wattrset(panel->window, 0);
 
     drawTitledBarWithPercentage(panel->window, 2, 1, gpu.usagePercent, "GPU:");
-    drawGraphLabels(panel->window, 3, 1, 4, "  0%", "100%");
-    drawGraph(panel->window, 3, 6, 4, HISTORY_SIZE, gpuUsageHistory);
+    drawGraphWithLabels(panel->window, 3, 1, 4, HISTORY_SIZE, gpuUsageHistory, "  0%", "100%");
 
     drawTitledBarWithPercentage(panel->window, 2, 36, gpu.memPercent, "MEM:");
-    drawGraphLabels(panel->window, 3, 36, 4, "  0%", "100%");
-    drawGraph(panel->window, 3, 41, 4, HISTORY_SIZE, gpuMemoryHistory);
+    drawGraphWithLabels(panel->window, 3, 36, 4, HISTORY_SIZE, gpuMemoryHistory, "  0%", "100%");
 
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(panel->window, 7, 1, buffer);

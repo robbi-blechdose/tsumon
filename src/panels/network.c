@@ -22,7 +22,7 @@ typedef struct {
 } NetStatus;
 
 static NetStatus net;
-#define HISTORY_SIZE 11
+#define HISTORY_SIZE 10
 static uint64_t downHistory[HISTORY_SIZE];
 static uint64_t upHistory[HISTORY_SIZE];
 static uint8_t downHistoryScaled[HISTORY_SIZE];
@@ -171,10 +171,8 @@ void drawNetworkPanel(Panel* panel)
     sprintf(buffer, "%6.2f MiB/s     %6.2f MiB/s", B_TO_MB(net.down), B_TO_MB(net.up));
     mvwaddstr(panel->window, 3, 5, buffer);
 
-    drawGraphLabels(panel->window, 4, 1, 4, "   0", byteScaleNames[downHistoryScale]);
-    drawGraphColor(panel->window, 4, 6, 4, HISTORY_SIZE, downHistoryScaled, &colorNetworkGraph);
-    drawGraphLabels(panel->window, 4, 18, 4, "   0", byteScaleNames[upHistoryScale]);
-    drawGraphColor(panel->window, 4, 23, 4, HISTORY_SIZE, upHistoryScaled, &colorNetworkGraph);
+    drawGraphWithLabelsColor(panel->window, 4, 1, 4, HISTORY_SIZE, downHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[downHistoryScale]);
+    drawGraphWithLabelsColor(panel->window, 4, 18, 4, HISTORY_SIZE, upHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[upHistoryScale]);
 }
 
 void initNetworkPanel(Panel* panel)

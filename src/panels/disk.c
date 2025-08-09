@@ -24,7 +24,7 @@ typedef struct {
 } DiskStatus;
 
 DiskStatus disk;
-#define HISTORY_SIZE 11
+#define HISTORY_SIZE 10
 static uint64_t readHistory[HISTORY_SIZE];
 static uint64_t writeHistory[HISTORY_SIZE];
 static uint8_t readHistoryScaled[HISTORY_SIZE];
@@ -106,10 +106,8 @@ void drawDiskPanel(Panel* panel)
     sprintf(buffer, "%8d KiB/s   %8d KiB/s", disk.readsPerSec / 1024, disk.writesPerSec / 1024);
     mvwaddstr(panel->window, 3, 3, buffer);
 
-    drawGraphLabels(panel->window, 4, 1, 4, "   0", byteScaleNames[readHistoryScale]);
-    drawGraphColor(panel->window, 4, 6, 4, HISTORY_SIZE, readHistoryScaled, &colorDiskGraph);
-    drawGraphLabels(panel->window, 4, 18, 4, "   0", byteScaleNames[writeHistoryScale]);
-    drawGraphColor(panel->window, 4, 23, 4, HISTORY_SIZE, writeHistoryScaled, &colorDiskGraph);
+    drawGraphWithLabelsColor(panel->window, 4, 1, 4, HISTORY_SIZE, readHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[readHistoryScale]);
+    drawGraphWithLabelsColor(panel->window, 4, 18, 4, HISTORY_SIZE, writeHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[readHistoryScale]);
 }
 
 uint8_t initDiskPanel(Panel* panel)

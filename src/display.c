@@ -145,12 +145,26 @@ void drawGraph(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t width,
     drawGraphColor(win, y, x, height, width, values, &setColorViaThreshold);
 }
 
-void drawGraphLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, const char* min, const char* max)
+void drawGraphWithLabelsColor(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t graphWidth, uint8_t* values, void (*setColor)(WINDOW*, float), const char* min, const char* max)
 {
+    //It's okay to ignore the length of the minimum label here since we assume that numbers are used
+    //Thus the maximum label will either have the same(min: 0, max: 9) length or a larger one (min: 0, max: 100)
+    uint8_t labelWidth = strlen(max);
+
     mvwaddstr(win, y, x, max);
     mvwaddstr(win, y + height - 1, x, min);
-    wmove(win, y, x + strlen(max));
+    wmove(win, y, x + labelWidth);
     wvline(win, ACS_VLINE, height);
+
+    drawGraphColor(win, y, x + labelWidth + 1, height, graphWidth, values, setColor);
+
+    wmove(win, y, x + labelWidth + 1 + graphWidth);
+    wvline(win, ACS_VLINE, height);
+}
+
+void drawGraphWithLabels(WINDOW* win, uint8_t y, uint8_t x, uint8_t height, uint8_t graphWidth, uint8_t* values, const char* min, const char* max)
+{
+    drawGraphWithLabelsColor(win, y, x, height, graphWidth, values, &setColorViaThreshold, min, max);
 }
 
 void drawStringConditionalBold(WINDOW* win, uint8_t y, uint8_t x, const char* str, bool bold)

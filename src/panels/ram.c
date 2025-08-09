@@ -7,8 +7,8 @@
 #include "../display.h"
 #include "../utils/history.h"
 
-#define RAM_PANEL_HEIGHT 9
-#define RAM_PANEL_WIDTH 31
+#define RAM_PANEL_HEIGHT 12
+#define RAM_PANEL_WIDTH  31
 
 #define KB_TO_GB(X) ((X) / 1048576.0f)
 
@@ -19,7 +19,7 @@ typedef struct {
 } RAMStatus;
 
 static RAMStatus ram;
-#define HISTORY_SIZE 24
+#define HISTORY_SIZE 23
 static uint8_t ramUsageHistory[HISTORY_SIZE];
 
 uint8_t readRAMUsage(void)
@@ -61,8 +61,7 @@ void drawRAMPanel(Panel* panel)
     sprintf(buffer, "Used: %4.1f/%4.1f GiB", KB_TO_GB(ram.totalKb - ram.freeKb), KB_TO_GB(ram.totalKb));
     mvwaddstr(panel->window, 2, 1, buffer);
 
-    drawGraphLabels(panel->window, 3, 1, 5, "  0%", "100%");
-    drawGraph(panel->window, 3, 6, 5, HISTORY_SIZE, ramUsageHistory);
+    drawGraphWithLabels(panel->window, 3, 1, 8, HISTORY_SIZE, ramUsageHistory, "  0%", "100%");
 }
 
 void initRAMPanel(Panel* panel)

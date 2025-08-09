@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include "../../panel.h"
 
-void initCPUCoresPanel(Panel* panel);
+Panel* createCPUCoresPanel(Panel* cpuPanel);
 
 #endif
