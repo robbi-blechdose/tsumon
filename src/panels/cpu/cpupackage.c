@@ -12,6 +12,7 @@ typedef struct {
     CPUUsage usage;
     float temperature;
     float frequency;
+    uint16_t numCores;
 } CPUStatus;
 
 static CPUStatus cpu;
@@ -22,7 +23,7 @@ void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 {
     readCPUUsage(CPU_INDEX_PACKAGE, &cpu.usage);
     readCPUTemperature(&cpu.temperature);
-    readCPUFrequency(&cpu.frequency, 16, CPUFM_AVERAGE); //TODO: don't hardcode core count
+    readCPUFrequency(&cpu.frequency, cpu.numCores, CPUFM_AVERAGE);
     uint8_t newValue = cpu.usage.usagePercent;
     addEntryToHistory(cpuUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
@@ -48,6 +49,7 @@ Panel* createCPUPackagePanel(Panel* cpuPanel)
     panel->update = &updateCPUValues;
     panel->draw = &drawCPUPackagePanel;
 
+    readCPUCoreCount(&cpu.numCores);
     //Do one read to make sure the first actual read has a valid previous value
     readCPUUsage(CPU_INDEX_PACKAGE, &cpu.usage);
 
