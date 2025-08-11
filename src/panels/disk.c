@@ -5,7 +5,10 @@
 #include "../display.h"
 #include "../utils/history.h"
 
-#define DISK_PANEL_HEIGHT 9
+#define DISK_RW_PANEL_WIDTH 22
+#define DISK_PANEL_WIDTH  (DISK_RW_PANEL_WIDTH * 2 + 2)
+#define DISK_PANEL_HEIGHT 12
+#define DISK_RW_PANEL_HEIGHT (DISK_PANEL_HEIGHT - 3)
 
 #define DISK_NAME_LENGTH 32
 
@@ -24,7 +27,7 @@ typedef struct {
 } DiskStatus;
 
 DiskStatus disk;
-#define HISTORY_SIZE 10
+#define HISTORY_SIZE 14
 static uint64_t readHistory[HISTORY_SIZE];
 static uint64_t writeHistory[HISTORY_SIZE];
 static uint8_t readHistoryScaled[HISTORY_SIZE];
@@ -100,22 +103,59 @@ void drawDiskPanel(Panel* panel)
     mvwaddstr(panel->window, 1, 1, disk.name);
     wattrset(panel->window, 0);
 
-    mvwaddstr(panel->window, 2, 1, "Read:");
-    mvwaddstr(panel->window, 2, 18, "Write:");
-    char buffer[PANEL_WIDTH];
-    sprintf(buffer, "%8d KiB/s   %8d KiB/s", disk.readsPerSec / 1024, disk.writesPerSec / 1024);
-    mvwaddstr(panel->window, 3, 3, buffer);
-
-    drawGraphWithLabelsColor(panel->window, 4, 1, 4, HISTORY_SIZE, readHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[readHistoryScale]);
-    drawGraphWithLabelsColor(panel->window, 4, 18, 4, HISTORY_SIZE, writeHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[readHistoryScale]);
+    panelDrawChildren(panel);
 }
 
+void drawDiskReadPanel(Panel* panel)
+{
+    drawPanelBorder(panel, "Read");
+
+    //TODO: scale units just like the graphs do
+    char buffer[PANEL_WIDTH];
+    sprintf(buffer, "%8d KiB/s", disk.readsPerSec / 1024);
+    mvwaddstr(panel->window, 1, 1, buffer);
+    drawGraphWithLabelsColor(panel->window, 2, 1, 6, HISTORY_SIZE, readHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[readHistoryScale]);
+}
+
+Panel* createDiskReadPanel(Panel* diskPanel)
+{
+    Panel* panel = panelCreate(diskPanel, 2, 1, DISK_RW_PANEL_HEIGHT, DISK_RW_PANEL_WIDTH);
+    panel->update = NULL; //Taken care of by the parent panel
+    panel->draw = &drawDiskReadPanel;
+
+    return panel;
+}
+
+void drawDiskWritePanel(Panel* panel)
+{
+    drawPanelBorder(panel, "Write");
+
+    //TODO: scale units just like the graphs do
+    char buffer[PANEL_WIDTH];
+    sprintf(buffer, "%8d KiB/s", disk.writesPerSec / 1024);
+    mvwaddstr(panel->window, 1, 1, buffer);
+    drawGraphWithLabelsColor(panel->window, 2, 1, 6, HISTORY_SIZE, writeHistoryScaled, &colorDiskGraph, "   0", byteScaleNames[writeHistoryScale]);
+}
+
+Panel* createDiskWritePanel(Panel* diskPanel)
+{
+    Panel* panel = panelCreate(diskPanel, 2, DISK_RW_PANEL_WIDTH + 1, DISK_RW_PANEL_HEIGHT, DISK_RW_PANEL_WIDTH);
+    panel->update = NULL; //Taken care of by the parent panel
+    panel->draw = &drawDiskWritePanel;
+
+    return panel;
+}
+
+//TODO: allow multiple instances of the disk panel, and for that allow setting the disk to be monitored
 uint8_t initDiskPanel(Panel* panel)
 {
-    panelInit(panel, DISK_PANEL_HEIGHT, PANEL_WIDTH);
+    panelInit(panel, DISK_PANEL_HEIGHT, DISK_PANEL_WIDTH);
     readDiskName();
     panel->update = &updateDiskValues;
     panel->draw = &drawDiskPanel;
+
+    panelAddChild(panel, createDiskReadPanel(panel));
+    panelAddChild(panel, createDiskWritePanel(panel));
 
     //Do one read to make sure the first actual read has a valid previous value
     updateDiskValues(panel, 0);

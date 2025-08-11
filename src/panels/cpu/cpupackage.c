@@ -22,6 +22,7 @@ void updateCPUValues(Panel* panel, uint16_t refreshInterval)
 {
     readCPUUsage(CPU_INDEX_PACKAGE, &cpu.usage);
     readCPUTemperature(&cpu.temperature);
+    readCPUFrequency(&cpu.frequency, 16, CPUFM_AVERAGE); //TODO: don't hardcode core count
     uint8_t newValue = cpu.usage.usagePercent;
     addEntryToHistory(cpuUsageHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }

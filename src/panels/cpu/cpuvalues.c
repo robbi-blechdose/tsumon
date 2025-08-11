@@ -147,5 +147,55 @@ uint8_t readCPUTemperature(float* temperature)
     return 0;
 }
 
+uint8_t readCPUFrequency(float* frequency, uint16_t numCpuCores, CPUFrequencyMode mode)
+{
+    uint32_t frequencies[numCpuCores];
 
+    for(uint16_t i = 0; i < numCpuCores; i++)
+    {
+        char filename[128];
+        sprintf(filename, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_cur_freq", i);
+        FILE* curFreq = fopen(filename, "r");
+        if(curFreq == NULL)
+        {
+            return 1;
+        }
 
+        if(fscanf(curFreq, "%d", &frequencies[i]) != 1)
+        {
+            fclose(curFreq);
+            return 2;
+        }
+        fclose(curFreq);
+    }
+
+    *frequency = 0;
+    switch(mode)
+    {
+        case CPUFM_HIGHEST:
+        {
+            for(uint16_t i = 0; i < numCpuCores; i++)
+            {
+                if(frequencies[i] > *frequency)
+                {
+                    *frequency = frequencies[i];
+                }
+            }
+            break;
+        }
+        case CPUFM_AVERAGE:
+        {
+            for(uint16_t i = 0; i < numCpuCores; i++)
+            {
+                *frequency += frequencies[i];
+            }
+            *frequency /= numCpuCores;
+            break;
+        }
+    }
+
+    //Frequency is still in kHz, turn into GHz
+    *frequency /= 1000000;
+
+    return 0;
+}

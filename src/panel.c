@@ -80,6 +80,8 @@ void drawPanelBorder(Panel* panel, const char* title)
     wcolor_set(panel->window, C_WhiteBlack, 0);
     box(panel->window, 0, 0);
 
+    mvwaddstr(panel->window, 0, panel->width / 2 - strlen(title) / 2 - 2, "\u257C ");
+    mvwaddstr(panel->window, 0, panel->width / 2 + strlen(title) / 2 + 1, " \u257E");
     wcolor_set(panel->window, config.highlightColor, 0);
     mvwaddstr(panel->window, 0, panel->width / 2 - strlen(title) / 2, title);
 

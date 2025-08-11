@@ -23,4 +23,11 @@ uint8_t readCPUUsage(int16_t index, CPUUsage* usage);
 
 uint8_t readCPUTemperature(float* temperature);
 
+typedef enum {
+    CPUFM_HIGHEST,
+    CPUFM_AVERAGE
+} CPUFrequencyMode;
+
+uint8_t readCPUFrequency(float* frequency, uint16_t numCpuCores, CPUFrequencyMode mode);
+
 #endif
