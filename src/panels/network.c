@@ -7,7 +7,10 @@
 #include "../display.h"
 #include "../utils/history.h"
 
-#define NETWORK_PANEL_HEIGHT 9
+#define NETWORK_UD_PANEL_WIDTH 22
+#define NETWORK_PANEL_WIDTH  (NETWORK_UD_PANEL_WIDTH * 2 + 2)
+#define NETWORK_PANEL_HEIGHT 12
+#define NETWORK_UD_PANEL_HEIGHT (NETWORK_PANEL_HEIGHT - 3)
 
 #define B_TO_MB(X) ((X) / 1048576.0f)
 
@@ -22,7 +25,7 @@ typedef struct {
 } NetStatus;
 
 static NetStatus net;
-#define HISTORY_SIZE 10
+#define HISTORY_SIZE 14
 static uint64_t downHistory[HISTORY_SIZE];
 static uint64_t upHistory[HISTORY_SIZE];
 static uint8_t downHistoryScaled[HISTORY_SIZE];
@@ -161,26 +164,62 @@ void colorNetworkGraph(WINDOW* win, float value)
 void drawNetworkPanel(Panel* panel)
 {
     drawPanelBorder(panel, "Network");
-    char buffer[PANEL_WIDTH];
 
     wattrset(panel->window, A_BOLD);
     mvwaddstr(panel->window, 1, 1, net.interfaceName);
     wattrset(panel->window, 0);
-    mvwaddstr(panel->window, 2, 1, "Down:");
-    mvwaddstr(panel->window, 2, 18, "Up:");
-    sprintf(buffer, "%6.2f MiB/s     %6.2f MiB/s", B_TO_MB(net.down), B_TO_MB(net.up));
-    mvwaddstr(panel->window, 3, 5, buffer);
 
-    drawGraphWithLabelsColor(panel->window, 4, 1, 4, HISTORY_SIZE, downHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[downHistoryScale]);
-    drawGraphWithLabelsColor(panel->window, 4, 18, 4, HISTORY_SIZE, upHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[upHistoryScale]);
+    panelDrawChildren(panel);
+}
+
+void drawNetUpPanel(Panel* panel)
+{
+    drawPanelBorder(panel, "Up");
+
+    //TODO: scale units just like the graphs do
+    char buffer[PANEL_WIDTH];
+    sprintf(buffer, "%8.0f MiB/s", B_TO_MB(net.up));
+    mvwaddstr(panel->window, 1, 1, buffer);
+    drawGraphWithLabelsColor(panel->window, 2, 1, 6, HISTORY_SIZE, upHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[upHistoryScale]);
+}
+
+Panel* createNetUpPanel(Panel* netPanel)
+{
+    Panel* panel = panelCreate(netPanel, 2, NETWORK_UD_PANEL_WIDTH + 1, NETWORK_UD_PANEL_HEIGHT, NETWORK_UD_PANEL_WIDTH);
+    panel->update = NULL; //Taken care of by the parent panel
+    panel->draw = &drawNetUpPanel;
+
+    return panel;
+}
+
+void drawNetDownPanel(Panel* panel)
+{
+    drawPanelBorder(panel, "Down");
+
+    //TODO: scale units just like the graphs do
+    char buffer[PANEL_WIDTH];
+    sprintf(buffer, "%8.0f MiB/s", B_TO_MB(net.down));
+    mvwaddstr(panel->window, 1, 1, buffer);
+    drawGraphWithLabelsColor(panel->window, 2, 1, 6, HISTORY_SIZE, downHistoryScaled, &colorNetworkGraph, "   0", byteScaleNames[downHistoryScale]);
+}
+
+Panel* createNetDownPanel(Panel* netPanel)
+{
+    Panel* panel = panelCreate(netPanel, 2, 1, NETWORK_UD_PANEL_HEIGHT, NETWORK_UD_PANEL_WIDTH);
+    panel->update = NULL; //Taken care of by the parent panel
+    panel->draw = &drawNetDownPanel;
+
+    return panel;
 }
 
 void initNetworkPanel(Panel* panel)
 {
-    panelInit(panel, NETWORK_PANEL_HEIGHT, PANEL_WIDTH);
-
+    panelInit(panel, NETWORK_PANEL_HEIGHT, NETWORK_PANEL_WIDTH);
     panel->update = &updateNetworkValues;
     panel->draw = &drawNetworkPanel;
+
+    panelAddChild(panel, createNetDownPanel(panel));
+    panelAddChild(panel, createNetUpPanel(panel));
 
     if(getNumInterfaces(&net.numInterfaces))
     {
@@ -191,6 +230,7 @@ void initNetworkPanel(Panel* panel)
     {
         strcpy(net.interfaceName, "CANNOT DETECT");
     }
+
     //Do one read to make sure the first actual read has a valid previous value
     readNetworkUsage();
 }

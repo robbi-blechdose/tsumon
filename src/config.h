@@ -15,6 +15,7 @@ typedef struct {
     int8_t refreshIntervalIndex;
     int8_t widthLimit;
     int8_t highlightColor;
+    bool compactMode;
 } Configuration;
 
 extern Configuration config;

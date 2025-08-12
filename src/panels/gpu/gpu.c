@@ -9,7 +9,7 @@
 #include "../../utils/history.h"
 
 #define GPU_PANEL_HEIGHT 9
-#define GPU_PANEL_WIDTH 70
+#define GPU_PANEL_WIDTH 71
 
 typedef struct {
     char name[GPU_PANEL_WIDTH - 1];
@@ -35,6 +35,23 @@ void updateGPUValues(Panel* panel, uint16_t refreshInterval)
     addEntryToHistory(gpuMemoryHistory, HISTORY_SIZE, &newValue, sizeof(uint8_t));
 }
 
+void drawGPUMemPanel(Panel* panel)
+{
+    drawPanelBorder(panel, "Memory");
+
+    drawBarWithPercentage(panel->window, 1, 1, gpu.memPercent);
+    drawGraphWithLabels(panel->window, 2, 1, 4, HISTORY_SIZE, gpuMemoryHistory, "  0%", "100%");
+}
+
+Panel* createGPUMemPanel(Panel* gpuPanel)
+{
+    Panel* panel = panelCreate(gpuPanel, 1, 35, 7, 35); //TODO: adjust size
+    panel->update = NULL; //Updating is taken care of by the parent panel
+    panel->draw = &drawGPUMemPanel;
+
+    return panel;
+}
+
 void drawGPUPanel(Panel* panel)
 {
     drawPanelBorder(panel, "GPU");
@@ -47,11 +64,10 @@ void drawGPUPanel(Panel* panel)
     drawTitledBarWithPercentage(panel->window, 2, 1, gpu.usagePercent, "GPU:");
     drawGraphWithLabels(panel->window, 3, 1, 4, HISTORY_SIZE, gpuUsageHistory, "  0%", "100%");
 
-    drawTitledBarWithPercentage(panel->window, 2, 36, gpu.memPercent, "MEM:");
-    drawGraphWithLabels(panel->window, 3, 36, 4, HISTORY_SIZE, gpuMemoryHistory, "  0%", "100%");
-
     sprintf(buffer, "Temp: %4.1f °C", gpu.temperature);
     mvwaddstr(panel->window, 7, 1, buffer);
+
+    panelDrawChildren(panel);
 }
 
 /**
@@ -75,14 +91,17 @@ uint8_t initGPUPanel(Panel* panel)
         return 1;
     }
 
-    panelInit(panel, GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH);
-
-    panel->update = &updateGPUValues;
-    panel->draw = &drawGPUPanel;
-
     if(getGPUName(gpu.name, GPU_PANEL_WIDTH - 1))
     {
         strcpy(gpu.name, "CANNOT DETECT");
     }
+
+    panelInit(panel, GPU_PANEL_HEIGHT, GPU_PANEL_WIDTH);
+    panel->update = &updateGPUValues;
+    panel->draw = &drawGPUPanel;
+
+    //Add memory window
+    panelAddChild(panel, createGPUMemPanel(panel));
+
     return 0;
 }
