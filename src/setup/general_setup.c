@@ -17,8 +17,16 @@ void drawRefreshInterval(MenuTree* menu)
         mvwaddstr(menu->win, 1, 3, "Refresh interval:");
     }
     drawSlider(menu->win, 1, 21, NUM_REFRESH_INTERVALS, config.refreshIntervalIndex);
-    sprintf(buffer, "%3.1fs", refreshIntervals[config.refreshIntervalIndex] / 1000.0f);
-    mvwaddstr(menu->win, 1, 29, buffer);
+
+    if(refreshIntervals[config.refreshIntervalIndex] >= 500)
+    {
+        sprintf(buffer, " %3.1fs", refreshIntervals[config.refreshIntervalIndex] / 1000.0f);
+    }
+    else
+    {
+        sprintf(buffer, "%dms  ", refreshIntervals[config.refreshIntervalIndex]);
+    }
+    mvwaddstr(menu->win, 1, 31, buffer);
 }
 
 void moveRefreshIntervalCursorLR(bool left, MenuTree*)

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 //Possible refresh intervals in milliseconds
-#define NUM_REFRESH_INTERVALS 4
+#define NUM_REFRESH_INTERVALS 7
 extern const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS];
 
 //General configuration

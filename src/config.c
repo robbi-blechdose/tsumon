@@ -7,6 +7,9 @@
 Configuration config;
 
 const uint16_t refreshIntervals[NUM_REFRESH_INTERVALS] = {
+       6,
+      16,
+     125,
      250,
      500,
     1000,
